@@ -19,4 +19,17 @@ EOF
 ## Emacs
 
 * [prelude](https://github.com/bbatsov/prelude)
+* Install solarzied dartk theme   
+```
+(M-x package-install RET solarized-theme).    
+```
+* cp -r ./personal ~/.emacs.d/
+* personal config
+```
+cat <<'EOF' >> ~/.emacs.d/init.el
+
+;; tkhwang-dotfiles configuration
+(require 'tkhwang-dotemacs)
+EOF
+```
 
