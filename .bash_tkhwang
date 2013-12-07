@@ -1,0 +1,13 @@
+
+export TERM=xterm-256color
+
+# powerline 
+if [ -f /usr/local/lib/python2.7/dist-packages/powerline/bindings/bash/powerline.sh ]; then
+    source /usr/local/lib/python2.7/dist-packages/powerline/bindings/bash/powerline.sh
+fi
+
+# Display the current path after changing the directory (cd).
+function cd { builtin cd $* && pwd && ls -CF; }
+
+# alias
+alias octopress='rvm use ruby-1.9.3-p484'
