@@ -16,17 +16,19 @@ if [ -f ~/.bash_tkhwang ]; then
 fi
 EOF
 ```
+
 ## Emacs
 
 * [prelude](https://github.com/bbatsov/prelude)
 * Install solarzied dartk theme   
+
 ```
 (M-x package-install RET solarized-theme).    
-
 ```
 
 * cp -r ./personal ~/.emacs.d/
 * personal config
+
 ```
 cat <<'EOF' >> ~/.emacs.d/init.el
 
