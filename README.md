@@ -22,9 +22,11 @@ EOF
 * Install solarzied dartk theme   
 ```
 (M-x package-install RET solarized-theme).    
+
 ```
 * cp -r ./personal ~/.emacs.d/
 * personal config
+
 ```
 cat <<'EOF' >> ~/.emacs.d/init.el
 
@@ -32,4 +34,3 @@ cat <<'EOF' >> ~/.emacs.d/init.el
 (require 'tkhwang-dotemacs)
 EOF
 ```
-
