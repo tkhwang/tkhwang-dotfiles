@@ -11,3 +11,18 @@ function cd { builtin cd $* && pwd && ls -CF; }
 
 # alias
 alias octopress='rvm use ruby-1.9.3-p484'
+alias l='ls -CF'                              #
+# alias ls='ls -hF --color=tty'               # classify files in colour
+alias ls='ls --color=tty --show-control-char'
+alias ll='ls -l'                              # long list
+alias la='ls -A'                              # all but . and ..
+
+alias dir='ls --color=auto --format=vertical'
+alias vdir='ls --color=auto --format=long'
+
+if [[ "${COLORTERM}" == "rxvt-xpm" || "${TERM}" == "cygwin" ]]; then
+  #export LANG=ko_KR
+  export LANG=ko_KR.eucKR
+  #export LANG=C.eucKR
+  #export LANG=ko_KR.UTF-8
+fi
