@@ -35,12 +35,25 @@
 ;; -----------------------------------------------------------------------------
 (setq visible-bell t)
 
-
 ;; -----------------------------------------------------------------------------
 ;; Theme : solarized-dark
 ;; -----------------------------------------------------------------------------
 (load-theme 'solarized-dark t)
 
+;; -----------------------------------------------------------------------------
+;; clean-auto-indent
+;; https://github.com/pmarinov/clean-aindent
+;; -----------------------------------------------------------------------------
+;; = Installation and use
+;;
+;; Add "(require 'clean-aindent)" to your init.el. This will make
+;; "Enter" execute clean-aindent() and M-backspace execute
+;; bsunindent()
+;;
+;; To deactivate in your currend session do "M-x
+;; clean-aindent-done". To uninstall permanently remove the "require"
+;; function from init.el.
+(require 'clean-aindent)
 
 ;; ----------------------------------------------------------------------------
 (provide 'tkhwang-dotemacs) ; --------------------------------------------- END
