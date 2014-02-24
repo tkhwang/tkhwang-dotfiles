@@ -43,11 +43,12 @@
 ;; -----------------------------------------------------------------------------
 ;; Font : Monaco configuration
 ;; -----------------------------------------------------------------------------
-(if (eq system-type 'gnu/linux)
-    (set-default-font "Monaco-11"))
+(if (eq system-type 'linux/gnu)
+    (set-frame-font "Monaco-11"))
 (if (eq system-type 'darwin)
-    (set-default-font "Monaco-13"))
+    (set-frame-font "Monaco-13"))
 (if (eq system-type 'cygwin)
+    (set-frame-font "Monaco-13"))
 
 ;; -----------------------------------------------------------------------------
 ;; clean-auto-indent
