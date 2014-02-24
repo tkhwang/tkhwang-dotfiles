@@ -48,7 +48,7 @@
 (if (eq system-type 'darwin)
     (set-frame-font "Monaco-13"))
 (if (eq system-type 'cygwin)
-    (set-frame-font "Monaco-13"))
+    (set-frame-font "Monaco-10"))
 
 ;; -----------------------------------------------------------------------------
 ;; clean-auto-indent
