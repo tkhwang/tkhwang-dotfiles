@@ -41,6 +41,19 @@
 (load-theme 'solarized-dark t)
 
 ;; -----------------------------------------------------------------------------
+;; Font
+;; -----------------------------------------------------------------------------
+(if (eq system-type 'gnu/linux)
+    (set-default-font "Monaco-11"))
+(if (eq system-type 'darwin)
+    (set-default-font "Monaco-13"))
+(if (eq system-type 'cygwin)
+    (set-default-font "Monaco-12"))
+
+
+
+
+;; -----------------------------------------------------------------------------
 ;; clean-auto-indent
 ;; https://github.com/pmarinov/clean-aindent
 ;; -----------------------------------------------------------------------------
