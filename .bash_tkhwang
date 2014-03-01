@@ -16,9 +16,11 @@ alias l='ls -CF'                              #
 alias ls='ls --color=tty --show-control-char'
 alias ll='ls -l'                              # long list
 alias la='ls -A'                              # all but . and ..
-
 alias dir='ls --color=auto --format=vertical'
 alias vdir='ls --color=auto --format=long'
+
+# todo.txt
+alias t='$HOME/bin/todo.sh -d $HOME/Dropbox/todo/todo.cfg'
 
 if [[ "${COLORTERM}" == "rxvt-xpm" || "${TERM}" == "cygwin" ]]; then
   #export LANG=ko_KR
@@ -26,3 +28,9 @@ if [[ "${COLORTERM}" == "rxvt-xpm" || "${TERM}" == "cygwin" ]]; then
   #export LANG=C.eucKR
   #export LANG=ko_KR.UTF-8
 fi
+
+# Android SDK
+#export ANDROID_SDK="/Users/tkhwang/_tkHWANG/android/adt-bundle-mac-x86_64/sdk"
+#export PATH="$PATH:$ANDROID_SDK/tools"
+#export PATH="$PATH:$ANDROID_SDK/platform-tools"
+
