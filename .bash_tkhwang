@@ -1,13 +1,16 @@
-
+# Terminal
 export TERM=xterm-256color
 
-# powerline 
-if [ -f /usr/local/lib/python2.7/dist-packages/powerline/bindings/bash/powerline.sh ]; then
-    source /usr/local/lib/python2.7/dist-packages/powerline/bindings/bash/powerline.sh
-fi
+# Display the current path after changing the directory (cd).
+function cd { builtin cd $* && pwd && ls -CF; }
 
+# alias
+alias ll='ls -alF'
+alias octopress='rvm use ruby-1.9.3-p484'
+alias t='$HOME/bin/todo.sh -d $HOME/Dropbox/todo/todo.cfg'
+
+# powerline
 #export POWERLINE_PATH=/Users/tkhwang/Library/Python/2.7/lib/python/site-packages/powerline
-#if [ -f $POWERLINE_PATH/bindings/bash/powerline.sh ]; then
 #    source $POWERLINE_PATH/bindings/bash/powerline.sh
 #fi
 
@@ -15,33 +18,15 @@ if [ -d "$HOME/Library/Python/2.7/bin" ]; then
     PATH="$HOME/Library/Python/2.7/bin:$PATH"
 fi
 
-# Display the current path after changing the directory (cd).
-function cd { builtin cd $* && pwd && ls -CF; }
+#export LANG=en_US.utf8
 
-# alias
-alias octopress='rvm use ruby-1.9.3-p484'
-alias l='ls -CF'                              #
-# alias ls='ls -hF --color=tty'               # classify files in colour
-alias ls='ls --color=tty --show-control-char'
-alias ll='ls -l'                              # long list
-alias la='ls -A'                              # all but . and ..
-alias dir='ls --color=auto --format=vertical'
-alias vdir='ls --color=auto --format=long'
+# PATH
+#export JAVA_HOME="/usr/libexec/java_home"
+##export JAVA_HOME=$(/usr/libexec/java_home -v 1.6)
 
-# todo.txt
-alias t='$HOME/bin/todo.sh -d $HOME/Dropbox/todo/todo.cfg'
-
-if [[ "${COLORTERM}" == "rxvt-xpm" || "${TERM}" == "cygwin" ]]; then
-  #export LANG=ko_KR
-  export LANG=ko_KR.eucKR
-  #export LANG=C.eucKR
-  #export LANG=ko_KR.UTF-8
-fi
-
-# Android SDK
-#export ANDROID_SDK="/Users/tkhwang/_tkHWANG/android/adt-bundle-mac-x86_64/sdk"
-#export PATH="$PATH:$ANDROID_SDK/tools"
-#export PATH="$PATH:$ANDROID_SDK/platform-tools"
+# ANDROID SDK
+export ANDROID_HOME="/Users/tkhwang/_tkHWANG/android/adt-bundle-mac-x86_64/sdk"
+export ANDROID_SDK="/Users/tkhwang/_tkHWANG/android/adt-bundle-mac-x86_64/sdk"
 
 # ANDROID NDK
 export NDK_ROOT="/Users/tkhwang/_tkHWANG/android/android-ndk-r9d"
