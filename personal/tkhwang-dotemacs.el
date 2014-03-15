@@ -48,7 +48,7 @@
 (if (eq system-type 'darwin)
     (set-frame-font "Monaco-13"))
 (if (eq system-type 'cygwin)
-    (set-frame-font "Monaco-10"))
+    (set-frame-font "Monaco-13"))
 
 ;; -----------------------------------------------------------------------------
 ;; clean-auto-indent
@@ -64,6 +64,14 @@
 ;; clean-aindent-done". To uninstall permanently remove the "require"
 ;; function from init.el.
 (require 'clean-aindent)
+
+;; -----------------------------------------------------------------------------
+;; powerline
+;; https://github.com/milkypostman/powerline
+;; -----------------------------------------------------------------------------
+(require 'powerline)
+(powerline-default-theme)
+
 
 ;; ----------------------------------------------------------------------------
 (provide 'tkhwang-dotemacs) ; --------------------------------------------- END
