@@ -18,6 +18,18 @@ if [ -d "$HOME/Library/Python/2.7/bin" ]; then
     PATH="$HOME/Library/Python/2.7/bin:$PATH"
 fi
 
+if [[ "${COLORTERM}" == "rxvt-xpm" || "${TERM}" == "cygwin" ]]; then
+  #export LANG=ko_KR
+  export LANG=ko_KR.eucKR
+  #export LANG=C.eucKR
+  #export LANG=ko_KR.UTF-8
+fi
+
+if [[ "${TERM}" == "xterm-256color" ]]; then
+  	source ~/sol.dark
+fi
+
+
 #export LANG=en_US.utf8
 
 # PATH
@@ -35,3 +47,4 @@ export NDK_ROOT="/Users/tkhwang/_tkHWANG/android/android-ndk-r9d"
 export PATH="$PATH:$ANDROID_SDK/tools"
 export PATH="$PATH:$ANDROID_SDK/platform-tools"
 export PATH="$PATH:$NDK_ROOT"
+export PATH="$PATH:~/bin"
