@@ -73,6 +73,35 @@
 (powerline-default-theme)
 
 
+;; -----------------------------------------------------------------------------
+;; markdown
+;; -----------------------------------------------------------------------------
+;; Markdown mode
+;(require 'markdown-mode)
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+
+(add-to-list 'auto-mode-alist '("\\.txt\\'"      . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'"       . markdown-mode))
+
+;(add-hook 'markdown-mode-hook 'longlines-mode)
+
+;; -----------------------------------------------------------------------------
+;; Emacs tips
+;; https://sites.google.com/site/steveyegge2/effective-emacs
+;; -----------------------------------------------------------------------------
+
+;Item 2: Invoke M-x without the Alt key
+(global-set-key "\C-x\C-m" 'execute-extended-command)
+(global-set-key "\C-c\C-m" 'execute-extended-command)
+
+; Item 3: Prefer backward-kill-word over Backspace
+(global-set-key "\C-w" 'backward-kill-word)
+(global-set-key "\C-x\C-k" 'kill-region)
+(global-set-key "\C-c\C-k" 'kill-region)
+
+
 ;; ----------------------------------------------------------------------------
 (provide 'tkhwang-dotemacs) ; --------------------------------------------- END
 ;; ----------------------------------------------------------------------------
