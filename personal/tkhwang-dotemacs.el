@@ -44,11 +44,15 @@
 ;; Font : Monaco configuration
 ;; -----------------------------------------------------------------------------
 (if (eq system-type 'linux/gnu)
-    (set-frame-font "Monaco-11"))
+    (set-frame-font "Monaco-10"))
 (if (eq system-type 'darwin)
     (set-frame-font "Monaco-13"))
 (if (eq system-type 'cygwin)
     (set-frame-font "Monaco-13"))
+
+; Font config
+; http://earthwithsun.com/questions/561885/setting-monospaced-font-on-emacs
+(set-default-font "-apple-Monaco-normal-normal-normal-*-14-*-*-*-*-0-iso10646-1")
 
 ;; -----------------------------------------------------------------------------
 ;; clean-auto-indent
