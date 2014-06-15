@@ -18,7 +18,7 @@
 ;; Enable menu-bar and tool-bar
 ;; ----------------------------------------------------------------------------
 (menu-bar-mode 1)
-(tool-bar-mode 1)
+;(tool-bar-mode 1)
 
 ;; ----------------------------------------------------------------------------
 ;; Backup File
@@ -101,6 +101,24 @@
 (global-set-key "\C-x\C-k" 'kill-region)
 (global-set-key "\C-c\C-k" 'kill-region)
 
+;; -----------------------------------------------------------------------------
+;; emacs-for-python
+;; https://github.com/gabrielelanaro/emacs-for-python
+;; -----------------------------------------------------------------------------
+(load-file "~/.emacs.d/vendor/emacs-for-python/epy-init.el")
+
+(add-to-list 'load-path "~/.emacs.d/vendor/emacs-for-python/") ;; tell where to load the various files
+(require 'epy-setup)      ;; It will setup other loads, it is required!
+(require 'epy-python)     ;; If you want the python facilities [optional]
+(require 'epy-completion) ;; If you want the autocompletion settings [optional]
+(require 'epy-editing)    ;; For configurations related to editing [optional]
+(require 'epy-bindings)   ;; For my suggested keybindings [optional]
+(require 'epy-nose)       ;; For nose integration
+
+(epy-setup-checker "pyflakes %f")
+
+(require 'highlight-indentation)
+(add-hook 'python-mode-hook 'highlight-indentation)
 
 ;; ----------------------------------------------------------------------------
 (provide 'tkhwang-dotemacs) ; --------------------------------------------- END
