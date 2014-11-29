@@ -109,6 +109,9 @@
 ;; Jedi.el - Python auto-completion for Emacs
 ;; http://tkf.github.io/emacs-jedi/latest/#jedi-el-python-auto-completion-for-emacs
 ;; -----------------------------------------------------------------------------
+;; M-x package-install RET jedi RET
+;; sudo pip install virtualenv
+;; M-x jedi:install-server in Emacs
 (add-hook 'python-mode-hook 'jedi:setup)
 (setq jedi:complete-on-dot t)
 
