@@ -48,3 +48,6 @@ export PATH="$PATH:$ANDROID_SDK/tools"
 export PATH="$PATH:$ANDROID_SDK/platform-tools"
 export PATH="$PATH:$NDK_ROOT"
 export PATH="$PATH:~/bin"
+
+# python
+export PYTHONSTARTUP="/home/tkhwang/.pythonrc"
