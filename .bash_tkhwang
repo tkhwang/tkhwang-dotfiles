@@ -89,3 +89,6 @@ export PATH="$PATH:~/bin"
 # wechall
 export WECHALLUSER="humb1ec0ding"
 export WECHALLTOKEN="BEB82-DAAFA-0EE72-7DB92-A1766-30342"
+
+# python
+export PYTHONSTARTUP="/home/tkhwang/.pythonrc"
