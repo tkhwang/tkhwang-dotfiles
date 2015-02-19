@@ -1,3 +1,38 @@
+# Prompt
+#export PS1='\[\e[1;32m\][\u@\h \W]\$\[\e[0m\] '
+
+# https://github.com/mdo/config/blob/master/.bash_profile#L1-L13
+# Get the Git branch
+parse_git_branch() {
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
+# Custom bash prompt
+#
+# Includes custom character for the prompt, path, and Git branch name.
+#
+# Source: kirsle.net/wizards/ps1.html
+export PS1="\n\[$(tput bold)\]\[$(tput setaf 5)\]➜ \[$(tput setaf 6)\]\w\[$(tput setaf 3)\]\$(parse_git_branch) \[$(tput sgr0)\]"
+
+## Git branch switching
+alias master='git co master'
+alias ghp='git co gh-pages'
+
+## Git commands
+alias log='git log'
+alias diff='git diff'
+alias branch='git branch'
+alias st='git status'
+alias fetch='git fetch'
+alias push='git push origin head'
+alias pull='git pull'
+alias fp='fetch && pull'
+alias gmm='git merge master'
+alias gmghp='git merge gh-pages'
+alias recent='git for-each-ref --sort=-committerdate refs/heads/'
+alias branch_new="git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)'"
+
+
 # Terminal
 export TERM=xterm-256color
 
@@ -5,7 +40,9 @@ export TERM=xterm-256color
 function cd { builtin cd $* && pwd && ls -CF; }
 
 # alias
+alias l='ls -aF'
 alias ll='ls -alF'
+alias lll='ls -alF |more'
 alias octopress='rvm use ruby-1.9.3-p484'
 alias t='$HOME/bin/todo.sh -d $HOME/Dropbox/todo/todo.cfg'
 
@@ -48,3 +85,7 @@ export PATH="$PATH:$ANDROID_SDK/tools"
 export PATH="$PATH:$ANDROID_SDK/platform-tools"
 export PATH="$PATH:$NDK_ROOT"
 export PATH="$PATH:~/bin"
+
+# wechall
+export WECHALLUSER="humb1ec0ding"
+export WECHALLTOKEN="BEB82-DAAFA-0EE72-7DB92-A1766-30342"
