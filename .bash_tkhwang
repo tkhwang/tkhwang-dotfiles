@@ -1,6 +1,4 @@
-# Prompt
-#export PS1='\[\e[1;32m\][\u@\h \W]\$\[\e[0m\] '
-
+# Prompt using git branch info
 # https://github.com/mdo/config/blob/master/.bash_profile#L1-L13
 # Get the Git branch
 parse_git_branch() {
@@ -31,7 +29,6 @@ alias gmm='git merge master'
 alias gmghp='git merge gh-pages'
 alias recent='git for-each-ref --sort=-committerdate refs/heads/'
 alias branch_new="git for-each-ref --sort=-committerdate refs/heads/ --format='%(refname:short)'"
-
 
 # Terminal
 export TERM=xterm-256color
