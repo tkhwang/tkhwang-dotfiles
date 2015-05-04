@@ -95,3 +95,9 @@ export WECHALLTOKEN="BEB82-DAAFA-0EE72-7DB92-A1766-30342"
 
 # python
 export PYTHONSTARTUP="/home/tkhwang/.pythonrc"
+# thefuck 
+# https://github.com/nvbn/thefuck
+
+alias fuck='$(thefuck $(fc -ln -1))'
+# You can use whatever you want as an alias, like for mondays:
+alias FUCK='fuck'
