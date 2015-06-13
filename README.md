@@ -35,3 +35,25 @@ cat <<'EOF' >> ~/.emacs.d/init.el
 (require 'tkhwang-dotemacs)
 EOF
 ```
+
+## Powerline
+
+* [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
+
+## Color-theme : Solarized
+
+* [Gnome terminal](https://github.com/Anthony25/gnome-terminal-colors-solarized)
+
+
+## Other tools
+
+* [Sublime Text](http://www.sublimetext.com/3)
+
+
+## Ubuntu
+
+### Monaco font
+
+* [monaco-font](https://github.com/cstrap/monaco-font)
+
+
