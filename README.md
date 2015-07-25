@@ -40,15 +40,16 @@ EOF
 
 * [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
 
-I prefer the system-wide installation.
+### system-wide installation in Ubuntu
 
-### Plugin Installation:
+#### Powerline installation
 
 ```sh
 sudo apt-get install python-pip git
 sudo pip install git+git://github.com/Lokaltog/powerline
 ```
-### Font Installation:
+
+#### Font Installation:
 
 ```sh
 wget https://github.com/Lokaltog/powerline/raw/develop/font/PowerlineSymbols.otf https://github.com/Lokaltog/powerline/raw/develop/font/10-powerline-symbols.conf
@@ -57,7 +58,7 @@ sudo fc-cache -vf
 sudo mv 10-powerline-symbols.conf /etc/fonts/conf.d/
 ```
 
-### VIM
+### vim : `~/.vimrc`
 
 ```sh
 set rtp+=/usr/local/lib/python2.7/dist-packages/powerline/bindings/vim/
@@ -69,20 +70,16 @@ set laststatus=2
 set t_Co=256
 ```
 
-### Tmux
+### tmux : `~/.tmux.conf`
 
 ```sh
 source /usr/local/lib/python2.7/dist-packages/powerline/bindings/tmux/powerline.conf
 set-option -g default-terminal "screen-256color"
 ```
 
-
-
-
 ## Color-theme : Solarized
 
 * [Gnome terminal](https://github.com/Anthony25/gnome-terminal-colors-solarized)
-
 
 ## Other tools
 
