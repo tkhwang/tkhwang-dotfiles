@@ -1,37 +1,5 @@
-# Git pro-tip
-# http://neverstopbuilding.com/gitpro
-
-source ~/.git-completion.bash
-source ~/.git-prompt.sh
-
-MAGENTA="\[\033[0;35m\]"
-YELLOW="\[\033[0;33m\]"
-BLUE="\[\033[34m\]"
-LIGHT_GRAY="\[\033[0;37m\]"
-CYAN="\[\033[0;36m\]"
-GREEN="\[\033[0;32m\]"
-GIT_PS1_SHOWDIRTYSTATE=true
-export LS_OPTIONS='--color=auto'
-export CLICOLOR='Yes'
-export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
-
-export PS1=$LIGHT_GRAY"\u@\h"'$(
-    if [[ $(__git_ps1) =~ \*\)$ ]]
-    # a file has been modified but not added
-    then echo "'$YELLOW'"$(__git_ps1 " (%s)")
-    elif [[ $(__git_ps1) =~ \+\)$ ]]
-    # a file has been added, but not commited
-    then echo "'$MAGENTA'"$(__git_ps1 " (%s)")
-    # the state is clean, changes are commited
-    else echo "'$CYAN'"$(__git_ps1 " (%s)")
-    fi)'$BLUE" \w"$GREEN": "
-
-alias ll='ls -lah'
-alias gg='git status -s'
-
-## Git branch switching
-alias master='git co master'
-alias ghp='git co gh-pages'
+# Display the current path after changing the directory (cd).
+function cd { builtin cd $* && pwd && ls -CF; }
 
 ## Git commands
 alias log='git log'
@@ -50,31 +18,28 @@ alias branch_new="git for-each-ref --sort=-committerdate refs/heads/ --format='%
 # Terminal
 export TERM=xterm-256color
 
-# Display the current path after changing the directory (cd).
-function cd { builtin cd $* && pwd && ls -CF; }
-
 # alias
+
+alias ll='ls -lah'
+alias gg='git status -s'
+
 alias l='ls -aF'
 alias ll='ls -alF'
 alias lll='ls -alF |more'
-alias octopress='rvm use ruby-1.9.3-p484'
-alias t='$HOME/bin/todo.sh -d $HOME/Dropbox/todo/todo.cfg'
 
-# powerline
-#export POWERLINE_PATH=/Users/tkhwang/Library/Python/2.7/lib/python/site-packages/powerline
-#    source $POWERLINE_PATH/bindings/bash/powerline.sh
-#fi
+## Git branch switching
+alias master='git co master'
+alias ghp='git co gh-pages'
 
-if [ -d "$HOME/Library/Python/2.7/bin" ]; then
-    PATH="$HOME/Library/Python/2.7/bin:$PATH"
-fi
 
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 # PATH
-#export JAVA_HOME="/usr/libexec/java_home"
-##export JAVA_HOME=$(/usr/libexec/java_home -v 1.6)
+
+if [ -d "$HOME/Library/Python/2.7/bin" ]; then
+    PATH="$HOME/Library/Python/2.7/bin:$PATH"
+fi
 
 # ANDROID SDK
 export ANDROID_HOME="/Users/tkhwang/_tkHWANG/android/adt-bundle-mac-x86_64/sdk"
