@@ -1,5 +1,5 @@
 # Display the current path after changing the directory (cd).
-function cd { builtin cd $* && pwd && ls -CF; }
+function cd { builtin cd $* && pwd && ls -lF; }
 
 ## Git commands
 alias log='git log'
