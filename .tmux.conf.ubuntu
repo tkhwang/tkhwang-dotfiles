@@ -1,3 +1,7 @@
 source /usr/local/lib/python2.7/dist-packages/powerline/bindings/tmux/powerline.conf
 set-option -g default-terminal "screen-256color"
 set -g status-right '#(powerline tmux right uptime,datetime,cpu)'
+
+# Sane scrolling
+set -g terminal-overrides 'xterm*:smcup@:rmcup@'
+set -g mode-mouse on
