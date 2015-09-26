@@ -54,6 +54,9 @@
 ; http://earthwithsun.com/questions/561885/setting-monospaced-font-on-emacs
 (set-default-font "-apple-Monaco-normal-normal-normal-*-14-*-*-*-*-0-iso10646-1")
 
+;; set input method toggle key to 'Shift-Space'
+(global-set-key [?\S- ] 'toggle-input-method)
+
 ;; -----------------------------------------------------------------------------
 ;; clean-auto-indent
 ;; https://github.com/pmarinov/clean-aindent

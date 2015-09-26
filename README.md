@@ -1,7 +1,6 @@
 tkhwang-dotfiles
 ================
 
-
 My own personal configurations...
 
 ## Bash
@@ -10,7 +9,15 @@ My own personal configurations...
 
 * [bash-it](https://github.com/Bash-it/bash-it)
 
-### My own
+### Base : bash-it
+
+* [bash-it](https://github.com/Bash-it/bash-it)
+* [gnome-terminal-colors-solarized](https://github.com/Anthony25/gnome-terminal-colors-solarized)
+* [Powerline](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
+
+### Configuration
+
+### `~/.bash_tkhwang`
 
 ```
 cat <<'EOF' >> ~/.bashrc
