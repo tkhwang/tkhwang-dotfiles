@@ -6,8 +6,11 @@ My own personal configurations...
 
 ## Bash
 
-* ~/.bash_tkhwang
-* ~/.bashrc
+### bash-it
+
+* [bash-it](https://github.com/Bash-it/bash-it)
+
+### My own
 
 ```
 cat <<'EOF' >> ~/.bashrc
