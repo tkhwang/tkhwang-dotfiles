@@ -1,4 +1,7 @@
+" Ubuntu
 set rtp+=/usr/local/lib/python2.7/dist-packages/powerline/bindings/vim/
+" Mac
+" source /Users/tkhwang/Library/Python/2.7/lib/python/site-packages/powerline/bindings/vim/plugin/powerline.vim
 
 set laststatus=2
 
@@ -34,7 +37,7 @@ set softtabstop=4
 set tabstop=4
 set ruler " 현재 커서 위치 표시
 set incsearch
-set statusline=\ %<%l:%v\ [%P]%=%a\ %h%m%r\ %F\
+"set statusline=\ %<%l:%v\ [%P]%=%a\ %h%m%r\ %F\
 
 " 마지막으로 수정된 곳에 커서를 위치함
 au BufReadPost *
@@ -53,4 +56,24 @@ if has("syntax")
 endif
 
 " 컬러 스킴 사용
-colorscheme jellybeans
+syntax enable
+set background=dark
+let g:solarized_termcolors=256
+:color desert
+
+" vim-pathogen
+" https://github.com/tpope/vim-pathogen
+execute pathogen#infect()
+syntax on
+filetype plugin indent on
+
+" syntastic : Syntax checking hacks for vim
+" https://github.com/scrooloose/syntastic
+"set statusline+=%#warningmsg#
+"set statusline+=%{SyntasticStatuslineFlag()}
+"set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
