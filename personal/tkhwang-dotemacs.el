@@ -10,7 +10,7 @@
 ;(setq load-path (cons (expand-file-name "~/.emacs.d/personal") load-path))
 
 (add-to-list 'load-path "~")
-(add-to-list 'load-path "~/.emacs.d")
+;(add-to-list 'load-path "~/.emacs.d")
 (add-to-list 'load-path "~/.emacs.d/personal")
 (add-to-list 'load-path "~/.emacs.d/vendor")
 
