@@ -1,6 +1,9 @@
 # Display the current path after changing the directory (cd).
 function cd { builtin cd $* && pwd && ls -lF; }
 
+# .gitignore : https://www.gitignore.io/
+function gi() { curl -L -s https://www.gitignore.io/api/$@ ;}
+
 ## Git commands
 alias log='git log'
 alias diff='git diff'
