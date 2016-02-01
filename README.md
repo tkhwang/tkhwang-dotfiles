@@ -34,10 +34,21 @@ EOF
 ## Emacs
 
 * [prelude](https://github.com/bbatsov/prelude)
-* Install solarzied dartk theme
+* Install solarzied dartk  and gotham theme
 
 ```
-(M-x package-install RET solarized-theme).
+(M-x package-install RET solarized-theme)
+(M-x package-install RET gotham-theme)
+```
+
+* Select theme in `~/.emacs.d/personal/tkhwang-dotemacs.el`
+
+```
+;; -----------------------------------------------------------------------------
+;; Color-theme
+;; -----------------------------------------------------------------------------
+;(load-theme 'solarized-dark t)
+(load-theme 'gotham t)
 ```
 
 * cp -r ./personal ~/.emacs.d/
