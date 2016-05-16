@@ -10,6 +10,7 @@ My own personal configurations...
 * [autojump](https://github.com/wting/autojump)
 * [gnome-terminal-colors-solarized](https://github.com/Anthony25/gnome-terminal-colors-solarized)
 * [Solarized terminator colors](https://github.com/ghuntley/terminator-solarized)
+* [Gnome Terminal colors](https://github.com/metalelf0/gnome-terminal-colors)
 
 ### Configuration
 
