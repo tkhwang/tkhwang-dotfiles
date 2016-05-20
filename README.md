@@ -35,21 +35,19 @@ EOF
 ## Emacs
 
 * [prelude](https://github.com/bbatsov/prelude)
-* Install solarzied dartk  and gotham theme
+* Install dracular theme
 
 ```
-(M-x package-install RET solarized-theme)
-(M-x package-install RET gotham-theme)
+(M-x package-install <RET> dracula-theme)
 ```
-
-* Select theme in `~/.emacs.d/personal/tkhwang-dotemacs.el`
 
 ```
 ;; -----------------------------------------------------------------------------
 ;; Color-theme
 ;; -----------------------------------------------------------------------------
 ;(load-theme 'solarized-dark t)
-(load-theme 'gotham t)
+;(load-theme 'gotham t)
+(load-theme 'dracula t)
 ```
 
 * cp -r ./personal ~/.emacs.d/

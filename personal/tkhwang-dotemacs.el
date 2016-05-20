@@ -36,10 +36,11 @@
 (setq visible-bell t)
 
 ;; -----------------------------------------------------------------------------
-;; Theme : solarized-dark
+;; Color-theme
 ;; -----------------------------------------------------------------------------
 ;(load-theme 'solarized-dark t)
-(load-theme 'gotham t)
+;(load-theme 'gotham t)
+(load-theme 'dracula t)
 
 ;; -----------------------------------------------------------------------------
 ;; Font : Monaco configuration
