@@ -63,6 +63,6 @@ EOF
 
 ## Other tools
 
-* [monaco-font](https://github.com/cstrap/monaco-font)
+* [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
 * [Sublime Text](http://www.sublimetext.com/3)
 
