@@ -5,16 +5,10 @@ My own personal configurations...
 
 ## Bash
 
-### [bash-it](https://github.com/Bash-it/bash-it)
-
+* [bash-it](https://github.com/Bash-it/bash-it)
 * [autojump](https://github.com/wting/autojump)
-* [gnome-terminal-colors-solarized](https://github.com/Anthony25/gnome-terminal-colors-solarized)
-* [Solarized terminator colors](https://github.com/ghuntley/terminator-solarized)
-* [Gnome Terminal colors](https://github.com/metalelf0/gnome-terminal-colors)
-
-### Configuration
-
-### `~/.bash_tkhwang`
+* [metalelf0/gnome-terminal-colors: Solarized Gnome Terminal colors, based on http://ethanschoonover.com/solarized](https://github.com/metalelf0/gnome-terminal-colors)
+* My configuration : `~/.bash_tkhwang`
 
 ```
 cat <<'EOF' >> ~/.bashrc
