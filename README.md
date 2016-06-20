@@ -19,7 +19,9 @@ EOF
 
 ## Powerline
 
-[How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
+- Ubuntu : [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
+- Mac : [Coderwall | Setup Vim, Powerline and iTerm2 on Mac OS X](https://coderwall.com/p/yiot4q/setup-vim-powerline-and-iterm2-on-mac-os-x)
+	 - [GitHub - powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
 
 ## vim
 
@@ -55,8 +57,18 @@ cat <<'EOF' >> ~/.emacs.d/init.el
 EOF
 ```
 
+##  [Sublime Text](http://www.sublimetext.com/3)
+
+```
+{
+    "color_scheme": "Packages/Color Scheme - Default/Solarized (Dark).tmTheme",
+    "font_face": "Monaco",
+    "font_size": 12
+}
+```
+
+
 ## Other tools
 
 * [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
-* [Sublime Text](http://www.sublimetext.com/3)
 
