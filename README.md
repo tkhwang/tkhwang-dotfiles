@@ -30,6 +30,23 @@ EOF
 
 ## Emacs
 
+### New : [spacemacs](https://github.com/syl20bnr/spacemacs) usage
+
+[syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
+
+* personal config
+
+```
+cat <<'EOF' >> ~/.spacemacs
+
+;; tkhwang-dotfiles configuration
+(require 'tkhwang-dotemacs-spacemacs)
+EOF
+```
+
+
+### Old : [prelude](https://github.com/bbatsov/prelude) usage
+
 * [prelude](https://github.com/bbatsov/prelude)
 * Install dracular theme
 
