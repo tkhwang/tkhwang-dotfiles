@@ -34,16 +34,21 @@ EOF
 
 [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
 
+* Default font change from `Source Code Pro`  to `Monaco`.
+
+```lisp
+   ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
+   ;; quickly tweak the mode-line size to make separators look not too crappy.
+   dotspacemacs-default-font '("Monaco"
+                               :size 13
+                               :weight normal
+                               :width normal
+                               :powerline-scale 1.1)
+```
+
 * personal config
 
-```
-cat <<'EOF' >> ~/.spacemacs
-
-;; tkhwang-dotfiles configuration
-(require 'tkhwang-dotemacs-spacemacs)
-EOF
-```
-
+`.spacemacs` configuration 추가 설정 필요. (T.B.D)
 
 ### Old : [prelude](https://github.com/bbatsov/prelude) usage
 
