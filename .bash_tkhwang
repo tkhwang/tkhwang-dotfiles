@@ -42,11 +42,11 @@ export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 # ANDROID SDK
-export ANDROID_HOME="/Users/tkhwang/_tkHWANG/android/adt-bundle-mac-x86_64/sdk"
-export ANDROID_SDK="/Users/tkhwang/_tkHWANG/android/adt-bundle-mac-x86_64/sdk"
+export ANDROID_HOME="/home/tkhwang/_tkhwang/_repo/android/sdk"
+export ANDROID_SDK="/home/tkhwang/_tkhwang/_repo/android/sdk"
 
 # ANDROID NDK
-export NDK_ROOT="/Users/tkhwang/_tkHWANG/android/android-ndk-r9d"
+export NDK_ROOT="/home/tkhwang/_tkhwang/_repo/android/sdk/ndk-bundle"
 
 # PATH
 export PATH="$PATH:$ANDROID_SDK/tools"
@@ -61,9 +61,3 @@ export WECHALLTOKEN="BEB82-DAAFA-0EE72-7DB92-A1766-30342"
 # python
 export PYTHONSTARTUP="/home/tkhwang/.pythonrc"
 
-# thefuck 
-# https://github.com/nvbn/thefuck
-
-alias fuck='$(thefuck $(fc -ln -1))'
-# You can use whatever you want as an alias, like for mondays:
-alias FUCK='fuck'
