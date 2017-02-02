@@ -6,8 +6,9 @@ My own personal configurations...
 ## Bash
 
 * [bash-it](https://github.com/Bash-it/bash-it)
-* [autojump](https://github.com/wting/autojump)
-* [metalelf0/gnome-terminal-colors: Solarized Gnome Terminal colors, based on http://ethanschoonover.com/solarized](https://github.com/metalelf0/gnome-terminal-colors)
+* Terminal colors : Solarized dark
+	- [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
+	- [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
 * My configuration : `~/.bash_tkhwang`
 
 ```
@@ -25,7 +26,7 @@ EOF
 
 ## vim
 
-[pathogen.vim](https://github.com/tpope/vim-pathogen)
+- [pathogen.vim](https://github.com/tpope/vim-pathogen)
 
 
 ## Emacs
