@@ -3,7 +3,6 @@ tkhwang-dotfiles
 
 My own personal configurations...
 
-
 ## Bash
 
 * [bash-it](https://github.com/Bash-it/bash-it)
