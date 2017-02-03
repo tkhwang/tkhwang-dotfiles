@@ -23,7 +23,6 @@ EOF
 
 - [pathogen.vim](https://github.com/tpope/vim-pathogen)
 
-
 ## Powerline
 
 - Ubuntu : [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
