@@ -3,12 +3,6 @@ tkhwang-dotfiles
 
 My own personal configurations...
 
-## Font
-
-- [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
-- [PT Mono for powerline](https://github.com/wedens/dotfiles/blob/master/fonts/PT%20Mono%20for%20Powerline.ttf)
-
-
 
 ## Bash
 
@@ -36,6 +30,13 @@ EOF
 - Ubuntu : [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
 - Mac : [Coderwall | Setup Vim, Powerline and iTerm2 on Mac OS X](https://coderwall.com/p/yiot4q/setup-vim-powerline-and-iterm2-on-mac-os-x)
 	 - [GitHub - powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
+
+
+## Font
+
+- [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
+- [PT Mono for powerline](https://github.com/wedens/dotfiles/blob/master/fonts/PT%20Mono%20for%20Powerline.ttf)
+
 
 
 ##  [Sublime Text](http://www.sublimetext.com/3)
