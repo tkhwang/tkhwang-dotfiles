@@ -75,6 +75,18 @@ EOF
 
 `.spacemacs` configuration 추가 설정 필요. (T.B.D)
 
+
+### Configuration
+
+```
+cat <<'EOF' >> ~/.emacs.d/init.el
+
+;; tkhwang-dotfiles configuration
+(require 'tkhwang-dotemacs)
+EOF
+```
+
+
 ### Old : [prelude](https://github.com/bbatsov/prelude) usage
 
 * [prelude](https://github.com/bbatsov/prelude)
@@ -93,13 +105,3 @@ EOF
 (load-theme 'dracula t)
 ```
 
-* cp -r ./personal ~/.emacs.d/
-* personal config
-
-```
-cat <<'EOF' >> ~/.emacs.d/init.el
-
-;; tkhwang-dotfiles configuration
-(require 'tkhwang-dotemacs)
-EOF
-```
