@@ -45,9 +45,10 @@ EOF
 
 ```
 {
-    "color_scheme": "Packages/Color Scheme - Default/Solarized (Dark).tmTheme",
-    "font_face": "Monaco",
-    "font_size": 12
+  "color_scheme": "Packages/User/Solarized (Dark) (SublimePythonIDE).tmTheme",
+  "font_face": "PT Mono",
+  "font_size": 13,
+   "theme": "Soda SolarizedDark.sublime-theme"
 }
 ```
 
