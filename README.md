@@ -3,6 +3,13 @@ tkhwang-dotfiles
 
 My own personal configurations...
 
+## Font
+
+- [Download Operator Fonts | Hoefler & Co.](https://www.typography.com/fonts/operator/styles/)
+- [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
+- [PT Mono for powerline](https://github.com/wedens/dotfiles/blob/master/fonts/PT%20Mono%20for%20Powerline.ttf)
+
+
 ## Bash
 
 * [bash-it](https://github.com/Bash-it/bash-it)
@@ -35,13 +42,6 @@ EOF
 	 - [GitHub - powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
 
 
-## Font
-
-- [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
-- [PT Mono for powerline](https://github.com/wedens/dotfiles/blob/master/fonts/PT%20Mono%20for%20Powerline.ttf)
-
-
-
 ##  [Sublime Text](http://www.sublimetext.com/3)
 
 - [Theme - Soda Solarized​Dark](https://packagecontrol.io/packages/Theme%20-%20Soda%20SolarizedDark)
@@ -58,6 +58,11 @@ EOF
 ```
 
 
+## ATOM
+
+- UI Theme : `Atom Dark`
+- Syntax Theme : `Spacegray Dark Neue`
+
 
 ## Emacs
 
@@ -69,12 +74,12 @@ EOF
 
 #### Font
 
-* Default font change from `Source Code Pro`  to `Monaco`.
+* Default font : `Operator Mono`
 
 ```lisp
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
-   dotspacemacs-default-font '("Monaco"
+   dotspacemacs-default-font '("Operator Mono"
                                :size 13
                                :weight normal
                                :width normal
