@@ -6,6 +6,11 @@ My own personal configurations...
 ## Bash
 
 * [bash-it](https://github.com/Bash-it/bash-it)
+
+```
+export BASH_IT_THEME='powerline-multiline'
+```
+
 * [autojump](https://github.com/wting/autojump)
 * Terminal colors : Solarized dark
 	- [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
@@ -23,7 +28,7 @@ EOF
 
 - [pathogen.vim](https://github.com/tpope/vim-pathogen)
 
-## Powerline
+## Powerline : tmux configuration
 
 - Ubuntu : [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
 - Mac : [Coderwall | Setup Vim, Powerline and iTerm2 on Mac OS X](https://coderwall.com/p/yiot4q/setup-vim-powerline-and-iterm2-on-mac-os-x)
@@ -56,9 +61,13 @@ EOF
 
 ## Emacs
 
-### New : [spacemacs](https://github.com/syl20bnr/spacemacs) usage
+### [spacemacs](https://github.com/syl20bnr/spacemacs) 
 
 [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
+
+### My own configuration
+
+#### Font
 
 * Default font change from `Source Code Pro`  to `Monaco`.
 
@@ -72,37 +81,50 @@ EOF
                                :powerline-scale 1.1)
 ```
 
-* personal config
+#### `dotspacemacs-configuration-layers`
 
-`.spacemacs` configuration 추가 설정 필요. (T.B.D)
-
-
-### Configuration
-
+```lisp
+   dotspacemacs-configuration-layers
+   '(
+     python
+     ;; ----------------------------------------------------------------
+     ;; Example of useful layers you may want to use right away.
+     ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
+     ;; <M-m f e R> (Emacs style) to install them.
+     ;; ----------------------------------------------------------------
+     helm
+     auto-completion
+     better-defaults
+     emacs-lisp
+     git
+     markdown
+     ;; org
+     ;; (shell :variables
+     ;;        shell-default-height 30
+     ;;        shell-default-position 'bottom)
+     ;; spell-checking
+     ;; syntax-checking
+     ;; version-control
+     )
 ```
-cat <<'EOF' >> ~/.emacs.d/init.el
 
-;; tkhwang-dotfiles configuration
-(require 'tkhwang-dotemacs)
-EOF
+
+#### `dotspacemacs/user-config`
+
+```lisp
+(defun dotspacemacs/user-config ()
+  ;; Item 2: Invoke M-x without the Alt key
+  (global-set-key "\C-x\C-m" 'execute-extended-command)
+  ; [Ctrl]-[L]
+  (global-set-key "\C-l" 'goto-line)
+  (global-linum-mode 1)
+  "Configuration function for user code.
+This function is called at the very end of Spacemacs initialization after
+layers configuration.
+This is the place where most of your configurations should be done. Unless it is
+explicitly specified that a variable should be set before a package is loaded,
+you should place your code here."
+  )
 ```
 
-
-### Old : [prelude](https://github.com/bbatsov/prelude) usage
-
-* [prelude](https://github.com/bbatsov/prelude)
-* Install dracular theme
-
-```
-(M-x package-install <RET> dracula-theme)
-```
-
-```
-;; -----------------------------------------------------------------------------
-;; Color-theme
-;; -----------------------------------------------------------------------------
-;(load-theme 'solarized-dark t)
-;(load-theme 'gotham t)
-(load-theme 'dracula t)
-```
 
