@@ -44,16 +44,19 @@ EOF
 
 ##  [Sublime Text](http://www.sublimetext.com/3)
 
-- [Theme - Soda Solarized​Dark](https://packagecontrol.io/packages/Theme%20-%20Soda%20SolarizedDark)
-- [All Autocomplete](https://packagecontrol.io/packages/All%20Autocomplete)
-- [knockdown](https://github.com/aziz/knockdown/)
+* Theme
+  * [equinusocio/material-theme: Material Theme, the most epic theme for Sublime Text 3 by Mattia Astorino](https://github.com/equinusocio/material-theme)
+  * [Theme - Soda Solarized​Dark](https://packagecontrol.io/packages/Theme%20-%20Soda%20SolarizedDark)
+* Markdown [knockdown](https://github.com/aziz/knockdown/)
+* [All Autocomplete](https://packagecontrol.io/packages/All%20Autocomplete)
 
 ```
 {
   "color_scheme": "Packages/User/Solarized (Dark) (SublimePythonIDE).tmTheme",
   "font_face": "PT Mono",
   "font_size": 13,
-   "theme": "Soda SolarizedDark.sublime-theme"
+  "highlight_line": true,
+  "theme": "Soda SolarizedDark.sublime-theme"
 }
 ```
 
@@ -64,13 +67,9 @@ EOF
 - Syntax Theme : `Spacegray Dark Neue`
 
 
-## Emacs
+## Emacs : [spacemacs](https://github.com/syl20bnr/spacemacs) 
 
-### [spacemacs](https://github.com/syl20bnr/spacemacs) 
-
-[syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
-
-### My own configuration
+- [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
 
 #### Font
 
@@ -131,5 +130,30 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   )
 ```
+
+
+## Ubuntu
+
+
+
+
+## Windows
+
+### Caps lock 키를 Windows key 로 remap
+
+[Windows: Map CAPS LOCK to Windows Key | mattshaw.org](http://mattshaw.org/news/window-map-caps-lock-to-windows-key/)
+
+Save as caps.reg, then double click to import into Registry.
+
+```
+Windows Registry Editor Version 5.00
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
+"Scancode Map"=hex:00,00,00,00,00,00,00,00,02,00,00,00,5c,e0,3a,00,00,00,00,00
+```
+
+
+
+
+
 
 
