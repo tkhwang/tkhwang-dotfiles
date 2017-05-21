@@ -19,9 +19,6 @@ export BASH_IT_THEME='powerline-multiline'
 ```
 
 * [autojump](https://github.com/wting/autojump)
-* Terminal colors : Solarized dark
-	- [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
-	- [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
 * My configuration : `~/.bash_tkhwang`
 
 ```
@@ -41,6 +38,13 @@ EOF
 - Mac : [Coderwall | Setup Vim, Powerline and iTerm2 on Mac OS X](https://coderwall.com/p/yiot4q/setup-vim-powerline-and-iterm2-on-mac-os-x)
 	 - [GitHub - powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
 
+
+## Gnome terminal
+
+* [Dracula : Gnome terminal](https://github.com/dracula/gnome-terminal)
+* Terminal colors : Solarized dark
+  - [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
+  - [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
 
 ##  [Sublime Text](http://www.sublimetext.com/3)
 
@@ -134,7 +138,7 @@ you should place your code here."
 
 ## Ubuntu
 
-
+* [Shadow icon theme](http://www.noobslab.com/2015/07/a-new-icon-set-shadow-available-for.html)
 
 
 ## Windows
