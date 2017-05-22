@@ -156,7 +156,10 @@ Windows Registry Editor Version 5.00
 ```
 
 
+## JetBrain : Android Studio, PyCharm
 
+- AndroidStudio : [Color Themes](http://color-themes.com/?view=theme&id=563a1a6480b4acf11273ae47)
+- PyCharm : [Material Theme UI :: JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/8006-material-theme-ui)
 
 
 
