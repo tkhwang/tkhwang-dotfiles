@@ -35,14 +35,20 @@ EOF
 	 - [GitHub - powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
 
 
-## Gnome terminal
+## Terminal
+
+### Gnome terminal
 
 * [Dracula : Gnome terminal](https://github.com/dracula/gnome-terminal)
-* Terminal colors : Solarized dark
-  - [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
-  - [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
+* Terminal colors : Solarized dark : [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
 
-##  [Sublime Text](http://www.sublimetext.com/3)
+### Terminator
+
+- [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
+
+## Editor
+
+###  [Sublime Text](http://www.sublimetext.com/3)
 
 * Theme
   * [equinusocio/material-theme: Material Theme, the most epic theme for Sublime Text 3 by Mattia Astorino](https://github.com/equinusocio/material-theme)
@@ -61,21 +67,19 @@ EOF
 ```
 
 
-## ATOM
+### ATOM
 
 - UI Theme : `Atom Dark`
 - Syntax Theme : `Spacegray Dark Neue`
 
-
-## Emacs 
-
-- [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
-
-
-## vim 
+### vim 
 
 - [SpaceVim](https://spacevim.org/)
 
+
+### Emacs 
+
+- [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
 
 #### Font
 
@@ -137,15 +141,22 @@ you should place your code here."
   )
 ```
 
+## JetBrain : Android Studio, PyCharm
 
-## Ubuntu
+- AndroidStudio : [Color Themes](http://color-themes.com/?view=theme&id=563a1a6480b4acf11273ae47)
+- PyCharm : [Material Theme UI :: JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/8006-material-theme-ui)
+
+
+## System
+
+### Ubuntu
 
 * [Shadow icon theme](http://www.noobslab.com/2015/07/a-new-icon-set-shadow-available-for.html)
 
 
-## Windows
+### Windows
 
-### Caps lock 키를 Windows key 로 remap
+#### Caps lock 키를 Windows key 로 remap
 
 [Windows: Map CAPS LOCK to Windows Key | mattshaw.org](http://mattshaw.org/news/window-map-caps-lock-to-windows-key/)
 
@@ -156,12 +167,6 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
 "Scancode Map"=hex:00,00,00,00,00,00,00,00,02,00,00,00,5c,e0,3a,00,00,00,00,00
 ```
-
-
-## JetBrain : Android Studio, PyCharm
-
-- AndroidStudio : [Color Themes](http://color-themes.com/?view=theme&id=563a1a6480b4acf11273ae47)
-- PyCharm : [Material Theme UI :: JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/8006-material-theme-ui)
 
 
 
