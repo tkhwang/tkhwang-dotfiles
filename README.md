@@ -28,13 +28,6 @@ cat <<'EOF' >> ~/.bashrc
 EOF
 ```
 
-## Powerline : tmux configuration
-
-- Ubuntu : [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
-- Mac : [Coderwall | Setup Vim, Powerline and iTerm2 on Mac OS X](https://coderwall.com/p/yiot4q/setup-vim-powerline-and-iterm2-on-mac-os-x)
-	 - [GitHub - powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
-
-
 ## Terminal
 
 ### Gnome terminal
@@ -45,6 +38,25 @@ EOF
 ### Terminator
 
 - [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
+
+### tmux
+
+- [jimeh/tmux-themepack: A pack of various Tmux themes.](https://github.com/jimeh/tmux-themepack)
+
+```
+source-file "${HOME}/.tmux-themepack/powerline/block/cyan.tmuxtheme"
+
+set-option -g default-terminal "screen-256color"
+
+# Sane scrolling
+set -g terminal-overrides 'xterm*:smcup@:rmcup@'
+#set -g mode-mouse on
+
+# tmux
+set -g @plugin 'jimeh/tmux-themepack'
+set -g @themepack 'powerline/doulbe/cyan'
+```
+
 
 ## Editor
 
@@ -81,9 +93,16 @@ EOF
 
 - [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
 
-#### Font
+Theme
 
-* Default font : `Operator Mono`
+```
+   ;; List of themes, the first of the list is loaded when spacemacs starts.
+   ;; Press <SPC> T n to cycle to the next theme in the list (works great
+   ;; with 2 themes variants, one dark and one light)
+   dotspacemacs-themes '(spacegray)
+```
+
+Font : Default font : `Operator Mono`
 
 ```lisp
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
@@ -95,7 +114,7 @@ EOF
                                :powerline-scale 1.1)
 ```
 
-#### `dotspacemacs-configuration-layers`
+`dotspacemacs-configuration-layers`
 
 ```lisp
    dotspacemacs-configuration-layers
@@ -123,7 +142,7 @@ EOF
 ```
 
 
-#### `dotspacemacs/user-config`
+`dotspacemacs/user-config`
 
 ```lisp
 (defun dotspacemacs/user-config ()
