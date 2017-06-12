@@ -28,10 +28,6 @@ cat <<'EOF' >> ~/.bashrc
 EOF
 ```
 
-## vim
-
-- [pathogen.vim](https://github.com/tpope/vim-pathogen)
-
 ## Powerline : tmux configuration
 
 - Ubuntu : [How can I install and use powerline plugin?](http://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
@@ -71,9 +67,15 @@ EOF
 - Syntax Theme : `Spacegray Dark Neue`
 
 
-## Emacs : [spacemacs](https://github.com/syl20bnr/spacemacs) 
+## Emacs 
 
 - [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
+
+
+## vim 
+
+- [SpaceVim](https://spacevim.org/)
+
 
 #### Font
 
