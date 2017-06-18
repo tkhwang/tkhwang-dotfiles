@@ -8,6 +8,7 @@ function gi() { curl -L -s https://www.gitignore.io/api/$@ ;}
 function ip() { curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//' ;}
 
 ## Git commands
+alias vimfm='vifm'
 alias log='git log'
 alias diff='git diff'
 alias branch='git branch'

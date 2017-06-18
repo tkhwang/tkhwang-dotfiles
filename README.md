@@ -160,6 +160,12 @@ you should place your code here."
   )
 ```
 
+## File Explorer
+
+- vifm : [vifm/vifm: Vifm is an ncurses based file manager with vi like key bindings, which also borrows some useful ideas from mutt.](https://github.com/vifm/vifm)
+
+
+
 ## JetBrain : Android Studio, PyCharm
 
 - AndroidStudio : [Color Themes](http://color-themes.com/?view=theme&id=563a1a6480b4acf11273ae47)
