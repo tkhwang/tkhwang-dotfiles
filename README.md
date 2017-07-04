@@ -57,6 +57,15 @@ set -g @plugin 'jimeh/tmux-themepack'
 set -g @themepack 'powerline/doulbe/cyan'
 ```
 
+## [Hyper™](https://hyper.is/)
+
+* Theme : [Dracula — A dark theme for Hyper and 40+ apps](https://draculatheme.com/hyper)
+
+```
+plugins: [
+  "hyper-dracula"
+]
+```
 
 ## Editor
 
