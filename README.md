@@ -3,12 +3,6 @@ tkhwang-dotfiles
 
 My own personal configurations...
 
-## Font
-
-- [Download Operator Fonts | Hoefler & Co.](https://www.typography.com/fonts/operator/styles/)
-- [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
-- [PT Mono for powerline](https://github.com/wedens/dotfiles/blob/master/fonts/PT%20Mono%20for%20Powerline.ttf)
-
 
 ## Bash
 
@@ -28,6 +22,15 @@ cat <<'EOF' >> ~/.bashrc
 EOF
 ```
 
+
+## Font
+
+- [powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
+- [Download Operator Fonts | Hoefler & Co.](https://www.typography.com/fonts/operator/styles/)
+- [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
+- [PT Mono for powerline](https://github.com/wedens/dotfiles/blob/master/fonts/PT%20Mono%20for%20Powerline.ttf)
+
+
 ## Terminal
 
 ### Gnome terminal
@@ -40,6 +43,8 @@ EOF
 - [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
 
 ### tmux
+
+- [tmux-plugins/tpm: Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
 
 - [jimeh/tmux-themepack: A pack of various Tmux themes.](https://github.com/jimeh/tmux-themepack)
 
@@ -80,7 +85,7 @@ plugins: [
 ```
 {
   "color_scheme": "Packages/User/Solarized (Dark) (SublimePythonIDE).tmTheme",
-  "font_face": "PT Mono",
+  "font_face": "Operator Mono Light",
   "font_size": 13,
   "highlight_line": true,
   "theme": "Soda SolarizedDark.sublime-theme"
