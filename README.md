@@ -206,6 +206,12 @@ you should place your code here."
 
 ### Ubuntu
 
+- [Latest Unity Tweak Tool for Ubuntu - NoobsLab | Ubuntu/Linux News, Reviews, Tutorials, Apps](http://www.noobslab.com/2013/04/latest-unity-tweak-tool-for-ubuntu-1304.html)
+
+```bash
+$ sudo apt-get install unity-tweak-tool
+```
+
 * [Shadow icon theme](http://www.noobslab.com/2015/07/a-new-icon-set-shadow-available-for.html)
 
 
