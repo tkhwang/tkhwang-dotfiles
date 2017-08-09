@@ -25,6 +25,15 @@ EOF
 
 ## Font
 
+- [Install powerline patched fonts](https://askubuntu.com/questions/283908/how-can-i-install-and-use-powerline-plugin)
+
+```bash
+wget https://github.com/Lokaltog/powerline/raw/develop/font/PowerlineSymbols.otf https://github.com/Lokaltog/powerline/raw/develop/font/10-powerline-symbols.conf
+sudo mv PowerlineSymbols.otf /usr/share/fonts/
+sudo fc-cache -vf
+sudo mv 10-powerline-symbols.conf /etc/fonts/conf.d/
+```
+
 - [powerline/fonts: Patched fonts for Powerline users.](https://github.com/powerline/fonts)
 - [Download Operator Fonts | Hoefler & Co.](https://www.typography.com/fonts/operator/styles/)
 - [Install Monaco font in Linux](https://gist.github.com/rogerleite/99819#file-install_monaco_font-sh)
@@ -33,19 +42,14 @@ EOF
 
 ## Terminal
 
-### Gnome terminal
+### iTerm2
 
-* [Dracula : Gnome terminal](https://github.com/dracula/gnome-terminal)
-* Terminal colors : Solarized dark : [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
+* [mbadolato/iTerm2-Color-Schemes: Over 150 terminal color schemes/themes for iTerm/iTerm2 (with ports to Terminal, Konsole, PuTTY, Xresources, XRDB, and Terminator)](https://github.com/mbadolato/iTerm2-Color-Schemes)
 
-### Terminator
-
-- [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
 
 ### tmux
 
 - [tmux-plugins/tpm: Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
-
 - [jimeh/tmux-themepack: A pack of various Tmux themes.](https://github.com/jimeh/tmux-themepack)
 
 ```
@@ -62,7 +66,16 @@ set -g @plugin 'jimeh/tmux-themepack'
 set -g @themepack 'powerline/doulbe/cyan'
 ```
 
-## [Hyper™](https://hyper.is/)
+### Gnome terminal
+
+* [Dracula : Gnome terminal](https://github.com/dracula/gnome-terminal)
+* Terminal colors : Solarized dark : [Gnome terminal](https://github.com/metalelf0/gnome-terminal-colors)
+
+### Terminator
+
+- [Terminator-solarized](https://github.com/ghuntley/terminator-solarized)
+
+### [Hyper™](https://hyper.is/)
 
 * Theme : [Dracula — A dark theme for Hyper and 40+ apps](https://draculatheme.com/hyper)
 
@@ -73,6 +86,12 @@ plugins: [
 ```
 
 ## Editor
+
+
+### vim 
+
+- [SpaceVim](https://spacevim.org/)
+
 
 ###  [Sublime Text](http://www.sublimetext.com/3)
 
@@ -97,10 +116,6 @@ plugins: [
 
 - UI Theme : `Atom Dark`
 - Syntax Theme : `Spacegray Dark Neue`
-
-### vim 
-
-- [SpaceVim](https://spacevim.org/)
 
 
 ### Emacs 
@@ -173,6 +188,7 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   )
 ```
+
 
 ## File Explorer
 
