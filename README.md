@@ -9,6 +9,8 @@ My own personal configurations...
 * [bash-it](https://github.com/Bash-it/bash-it)
 
 ```
+export BASH_IT_THEME='zork'
+or 
 export BASH_IT_THEME='powerline-multiline'
 ```
 
@@ -21,6 +23,18 @@ cat <<'EOF' >> ~/.bashrc
 [ -s ~/.bash_tkhwang ] && source ~/.bash_tkhwang
 EOF
 ```
+
+
+## Homebrew
+
+- [Homebrew — macOS 용 패키지 관리자](https://brew.sh/index_ko.html)
+
+```bash
+$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+
+- [Homebrew-Cask](https://caskroom.github.io/)
+- [caskroom/homebrew-cask: A CLI workflow for the administration of Mac applications distributed as binaries](https://github.com/caskroom/homebrew-cask)
 
 
 ## Font
