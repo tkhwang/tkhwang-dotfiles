@@ -36,6 +36,12 @@ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/inst
 - [Homebrew-Cask](https://caskroom.github.io/)
 - [caskroom/homebrew-cask: A CLI workflow for the administration of Mac applications distributed as binaries](https://github.com/caskroom/homebrew-cask)
 
+### Install Application by Homebrew
+
+```bash
+brew cask install google-chrome
+brew cask install atom
+```
 
 ## Font
 
@@ -226,7 +232,14 @@ you should place your code here."
 $ sudo apt-get install unity-tweak-tool
 ```
 
+#### Icon
+
+* [PapirusDevelopmentTeam/papirus-icon-theme: Papirus icon theme for Linux](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)
 * [Shadow icon theme](http://www.noobslab.com/2015/07/a-new-icon-set-shadow-available-for.html)
+
+#### Theme
+
+* [adapta-project/adapta-gtk-theme: An adaptive Gtk+ theme based on Material Design Guidelines](https://github.com/adapta-project/adapta-gtk-theme)
 
 
 ### Windows
