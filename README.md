@@ -110,7 +110,9 @@ plugins: [
 
 ### vim 
 
-- [SpaceVim](https://spacevim.org/)
+- [liuchengxu/space-vim: Lean & mean spacemacs-ish Vim distribution](https://github.com/liuchengxu/space-vim)
+
+Initially I tried [SpaceVim](https://spacevim.org/), but it is too slow. So that I switched to [liuchengxu/space-vim](https://github.com/liuchengxu/space-vim)
 
 
 ###  [Sublime Text](http://www.sublimetext.com/3)
