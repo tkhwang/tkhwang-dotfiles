@@ -72,6 +72,11 @@ sudo mv 10-powerline-symbols.conf /etc/fonts/conf.d/
 - [tmux-plugins/tpm: Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
 - [jimeh/tmux-themepack: A pack of various Tmux themes.](https://github.com/jimeh/tmux-themepack)
 
+```bash
+$ git clone https://github.com/jimeh/tmux-themepack.git ~/.tmux-themepack
+```
+
+
 ```
 source-file "${HOME}/.tmux-themepack/powerline/block/cyan.tmuxtheme"
 
@@ -138,6 +143,18 @@ Initially I tried [SpaceVim](https://spacevim.org/), but it is too slow. So that
 
 - UI Theme : `Atom Dark`
 - Syntax Theme : `Spacegray Dark Neue`
+
+
+### Visualstudio Code
+
+[Show whitespace characters in Visual Studio Code - Stack Overflow](https://stackoverflow.com/questions/30140595/show-whitespace-characters-in-visual-studio-code)
+
+```
+// Place your settings in this file to overwrite default and user settings.
+{
+    "editor.renderWhitespace": "all"
+}
+```
 
 
 ### Emacs 
