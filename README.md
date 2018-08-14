@@ -3,6 +3,23 @@ tkhwang-dotfiles
 
 My own personal configurations...
 
+## Basic setting
+
+기본 설정 아래 글 참조
+
+[본격 macOS에 개발 환경 구축하기](https://subicura.com/2017/11/22/mac-os-development-environment-setup.html)
+
+### tmux
+
+```bash
+$ git clone https://github.com/arcticicestudio/nord-tmux ~/.tmux/themes/nord-tmux
+$ vim ~/.tmux.config
+...
+run-shell "~/.tmux/themes/nord-tmux/nord.tmux"
+$ tmux
+```
+
+
 
 ## Bash
 
@@ -10,7 +27,7 @@ My own personal configurations...
 
 ```
 export BASH_IT_THEME='zork'
-or 
+or
 export BASH_IT_THEME='powerline-multiline'
 ```
 
@@ -113,7 +130,7 @@ plugins: [
 ## Editor
 
 
-### vim 
+### vim
 
 - [liuchengxu/space-vim: Lean & mean spacemacs-ish Vim distribution](https://github.com/liuchengxu/space-vim)
 
@@ -157,7 +174,7 @@ Initially I tried [SpaceVim](https://spacevim.org/), but it is too slow. So that
 ```
 
 
-### Emacs 
+### Emacs
 
 - [syl20bnr/spacemacs: A community-driven Emacs distribution - The best editor is neither Emacs nor Vim, it's Emacs *and* Vim!](https://github.com/syl20bnr/spacemacs)
 
@@ -274,7 +291,3 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
 "Scancode Map"=hex:00,00,00,00,00,00,00,00,02,00,00,00,5c,e0,3a,00,00,00,00,00
 ```
-
-
-
-
