@@ -39,20 +39,17 @@ $ tmux
 
 - autojump : [wting/autojump: A cd command that learns - easily navigate directories from the command line](https://github.com/wting/autojump)
 
-## Editor
-
-### VSCode
-
-### Sublime text
-
-### Atom
-
 ## MacOS
 
 ### Application
 
 - [Alfred - Productivity App for Mac OS X](https://www.alfredapp.com/)
 - [‎Mac App Store 에서 제공하는 PopClip](https://itunes.apple.com/kr/app/popclip/id445189367?mt=12)
+- [‎Amphetamine](https://itunes.apple.com/us/app/amphetamine/id937984704?mt=12)
+- VPN : [Windscribe](https://kor.windscribe.com/)
+- [Karabiner - Software for macOS](https://pqrs.org/osx/karabiner/) : Keyboard remap
+  - `delete_forward` => `grave_accent_and_tilde`
+  - `grave_accent_and_tilde` => `escape`
 
 #### Window arrangement
 
@@ -87,3 +84,9 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
 "Scancode Map"=hex:00,00,00,00,00,00,00,00,02,00,00,00,5c,e0,3a,00,00,00,00,00
 ```
+
+## Editor
+
+### VSCode
+
+### Sublime text
