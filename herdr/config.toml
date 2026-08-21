@@ -1,0 +1,35 @@
+onboarding = false
+
+[ui]
+agent_panel_sort = "spaces"
+
+# Show a per-pane work-phase tag next to the agent name.
+# Values are reported per pane via the `herdr-phase` script (plan|auto|clear);
+# only the reported token renders, so untagged agents look unchanged.
+[ui.sidebar.agents]
+rows = [
+  ["state_icon", "workspace", "tab"],
+  [{ token = "$plan", fg = "#89dceb", bold = true }, { token = "$auto", fg = "#fab387", bold = true }, "agent"],
+]
+
+[theme]
+name = "catppuccin"
+auto_switch = false
+
+[theme.custom]
+# Highlight for the active Space row / focused Agent row in the sidebar.
+# Since herdr 0.8.2 this uses the dedicated `active_row_bg` key (#2792);
+# overriding `surface_dim` no longer affects it. Catppuccin surface1 so the
+# current repo/branch stands out from the sidebar background (#181825).
+active_row_bg = "#45475a"
+
+# Navigate-mode cursor row, if it ever needs to differ from the theme default:
+# selection_bg = "#313244"
+
+# Agent finished and is waiting for you (idle + unseen, the cyan dot).
+# The teal token is used only for this state indicator, so overriding it
+# makes "waiting for your answer" bright red without touching anything else.
+teal = "#ff5555"
+
+[experimental]
+kitty_graphics = true
