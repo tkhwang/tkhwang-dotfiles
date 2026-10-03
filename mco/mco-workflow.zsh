@@ -1,12 +1,12 @@
 # mco workflow helpers — provider 는 항상 첫 번째 인자로 명시
 #
-#   mplan  <reviewers> <plan.md>                 plan review + debate  -> <plan>.debate.md
-#   mcode  <reviewers> [base-ref] [--plan p.md]  구현 리뷰 (git diff base-ref, 기본 main)
-#   mimpl  <provider>  <plan.md>                 구현 (write 모드)
+#   mco-plan  <reviewers> <plan.md>                 plan review + debate  -> <plan>.debate.md
+#   mco-code  <reviewers> [base-ref] [--plan p.md]  구현 리뷰 (git diff base-ref, 기본 main)
+#   mco-impl  <provider>  <plan.md>                 구현 (write 모드)
 #
-#   예) mplan codex,grok plans/auth.md
-#       mcode codex,gemini main --plan plans/auth.md
-#       mimpl codex plans/auth.md
+#   예) mco-plan codex,grok plans/auth.md
+#       mco-code codex,gemini main --plan plans/auth.md
+#       mco-impl codex plans/auth.md
 #   공통 옵션: -n (dry-run), 그 외 --xxx 는 mco 로 그대로 전달 (예: --stream live)
 
 : ${MCO_ARTIFACT_BASE:=reports/mco}
@@ -29,8 +29,8 @@ _mco_parse() {
   done
 }
 
-mplan() {
-  local usage="mplan <reviewers> <plan.md> [-n]   e.g. mplan codex,grok plans/auth.md"
+mco-plan() {
+  local usage="mco-plan <reviewers> <plan.md> [-n]   e.g. mco-plan codex,grok plans/auth.md"
   _mco_parse "$usage" "$@" || return
   local plan="${_mco_pos[1]}"
   [[ -f "$plan" ]] || { echo "usage: $usage" >&2; return 2; }
@@ -52,8 +52,8 @@ Do not modify any files." \
   return $rc
 }
 
-mcode() {
-  local usage="mcode <reviewers> [base-ref] [--plan plan.md] [-n]   e.g. mcode codex,grok main"
+mco-code() {
+  local usage="mco-code <reviewers> [base-ref] [--plan plan.md] [-n]   e.g. mco-code codex,grok main"
   _mco_parse "$usage" "$@" || return
   local base="${_mco_pos[1]:-main}"
   git rev-parse --verify -q "$base" &>/dev/null || base=HEAD
@@ -70,8 +70,8 @@ Do not modify any files." \
     "${_mco_extra[@]}"
 }
 
-mimpl() {
-  local usage="mimpl <provider> <plan.md> [-n]   e.g. mimpl codex plans/auth.md"
+mco-impl() {
+  local usage="mco-impl <provider> <plan.md> [-n]   e.g. mco-impl codex plans/auth.md"
   _mco_parse "$usage" "$@" || return
   local plan="${_mco_pos[1]}"
   [[ -f "$plan" ]] || { echo "usage: $usage" >&2; return 2; }

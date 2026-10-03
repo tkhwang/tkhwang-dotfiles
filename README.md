@@ -47,9 +47,9 @@ Notable customizations (herdr >= 0.8.2):
 Workflow: planning (claude) → plan review (mco) → plan 보강 (claude) → 구현 (mco) → 구현 리뷰 (mco). Providers are always the first argument.
 
 ```bash
-mplan codex,grok plans/auth.md                  # plan review + debate -> plans/auth.debate.md
-mimpl codex plans/auth.md                       # implement (write mode)
-mcode codex,grok main --plan plans/auth.md      # review git diff vs base ref (default: main)
+mco-plan codex,grok plans/auth.md                  # plan review + debate -> plans/auth.debate.md
+mco-impl codex plans/auth.md                       # implement (write mode)
+mco-code codex,grok main --plan plans/auth.md      # review git diff vs base ref (default: main)
 ```
 
 `-n` = dry-run; other `--xxx` flags pass through to mco. Artifacts go to `reports/mco/<task-id>/`.
