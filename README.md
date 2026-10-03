@@ -36,6 +36,24 @@ Notable customizations (herdr >= 0.8.2):
 - `theme.custom.active_row_bg` — makes the current repo/branch row visible in the left pane (the old `surface_dim` override stopped working in 0.8.2, which switched active rows to this dedicated key)
 - `theme.custom.teal` — turns the "agent waiting for you" indicator red
 
+## mco
+
+[mco](https://github.com/mco-org/mco) workflow helpers live in [`mco/mco-workflow.zsh`](mco/mco-workflow.zsh), symlinked to `~/.mco-workflow.zsh` and sourced from `~/.zshrc`.
+
+```bash
+./mco/apply.sh   # backup existing file, symlink, add source line to ~/.zshrc
+```
+
+Workflow: planning (claude) → plan review (mco) → plan 보강 (claude) → 구현 (mco) → 구현 리뷰 (mco). Providers are always the first argument.
+
+```bash
+mplan codex,grok plans/auth.md                  # plan review + debate -> plans/auth.debate.md
+mimpl codex plans/auth.md                       # implement (write mode)
+mcode codex,grok main --plan plans/auth.md      # review git diff vs base ref (default: main)
+```
+
+`-n` = dry-run; other `--xxx` flags pass through to mco. Artifacts go to `reports/mco/<task-id>/`.
+
 ## Font
 
 * install [programming fonts](https://github.com/mhartington/dotfiles/tree/main/config/fonts)
