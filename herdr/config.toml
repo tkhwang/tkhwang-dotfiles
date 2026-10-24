@@ -2,6 +2,7 @@ onboarding = false
 
 [ui]
 agent_panel_sort = "spaces"
+pane_borders = "always"
 
 # Show a per-pane work-phase tag next to the agent name.
 # Values are reported per pane via the `herdr-phase` script (plan|auto|clear);
@@ -10,6 +11,15 @@ agent_panel_sort = "spaces"
 rows = [
   ["state_icon", "workspace", "tab"],
   [{ token = "$plan", fg = "#89dceb", bold = true }, { token = "$auto", fg = "#fab387", bold = true }, "agent"],
+]
+
+# Space(워크스페이스) 행에 실행 중인 dev 서버 포트를 보여준다.
+# 값은 각 작업 폴더의 herdr-dev.sh 가 workspace 토큰 $fe, $be 로 보고한다 (열린 포트만).
+[ui.sidebar.spaces]
+rows = [
+  ["state_icon", "workspace"],
+  ["branch", "git_status"],
+  [{ token = "$fe", fg = "#a6e3a1" }, { token = "$be", fg = "#a6e3a1" }],
 ]
 
 [theme]

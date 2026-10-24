@@ -44,15 +44,16 @@ Notable customizations (herdr >= 0.8.2):
 ./mco/apply.sh   # backup existing file, symlink, add source line to ~/.zshrc
 ```
 
-Workflow: planning (claude) → plan review (mco) → plan 보강 (claude) → 구현 (mco) → 구현 리뷰 (mco). Providers are always the first argument.
+Workflow: spec → 접근안 수집 (mco) → plan 작성 (claude) → plan review (mco) → plan 보강 (claude) → 구현 (mco) → 구현 리뷰 (mco). Providers are always the first argument.
 
 ```bash
-mco-plan codex,grok plans/auth.md                  # plan review + debate -> plans/auth.debate.md
-mco-impl codex plans/auth.md                       # implement (write mode)
-mco-code codex,grok main --plan plans/auth.md      # review git diff vs base ref (default: main)
+mco-plan-draft claude,codex,grok plans/auth.spec.md   # independent short approaches -> plans/auth.drafts.md
+mco-plan-review codex,grok plans/auth.md              # plan review + debate -> plans/auth.debate.md
+mco-code-impl codex plans/auth.md                     # implement (write mode)
+mco-code-review codex,grok main --plan plans/auth.md  # review git diff vs base ref (default: main)
 ```
 
-`-n` = dry-run; other `--xxx` flags pass through to mco. Artifacts go to `reports/mco/<task-id>/`.
+`-n` = dry-run; other `--xxx` flags pass through to mco. File args accept a partial name (`insight`, `insight precedence`): one match runs directly, several open fzf (terminal) or list candidates (non-interactive). Artifacts go to `reports/mco/<task-id>/`.
 
 ## Font
 
