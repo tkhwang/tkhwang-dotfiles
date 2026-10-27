@@ -14,12 +14,17 @@ rows = [
 ]
 
 # Space(워크스페이스) 행에 실행 중인 dev 서버 포트를 보여준다.
-# 값은 각 작업 폴더의 herdr-dev.sh 가 workspace 토큰 $fe, $be 로 보고한다 (열린 포트만).
+# 값은 각 작업 폴더의 herdr-dev.sh 감시가 보고한다 (열린 포트만).
+#   $fe, $be              herdr 탭이나 사람이 띄운 서버 (초록)    예) 🧑 fe:3011 · be:5010
+#   $fe_agent, $be_agent  agent-dev.sh 로 agent 가 띄운 서버 (주황) 예) 🤖 fe:3011 · be:5010
 [ui.sidebar.spaces]
 rows = [
   ["state_icon", "workspace"],
   ["branch", "git_status"],
-  [{ token = "$fe", fg = "#a6e3a1" }, { token = "$be", fg = "#a6e3a1" }],
+  [
+    { token = "$fe", fg = "#a6e3a1" }, { token = "$be", fg = "#a6e3a1" },
+    { token = "$fe_agent", fg = "#fab387" }, { token = "$be_agent", fg = "#fab387" },
+  ],
 ]
 
 [theme]

@@ -9,7 +9,8 @@
 #   task-b        5020     3021
 #   task-c        5030     3031
 #   task-d        5040     3041
-#   shared        5050     3051
+#   task-e        5050     3051
+#   shared        5100     3101     ← task 들과 겹치지 않게 100 번대
 #
 # 표에 없는 폴더는 원본과 같은 5000/3001 을 쓴다. DB 는 worktree 별로 분리돼 있고 Redis 만 공유한다.
 # frontend 는 VITE_BASE_API_URL 로 같은 task 의 backend 를 바라보고, --strictPort 라 포트가 막혀 있으면
@@ -37,7 +38,8 @@ dev_ports() {
     task-b)      be_port=5020; fe_port=3021 ;;
     task-c)      be_port=5030; fe_port=3031 ;;
     task-d)      be_port=5040; fe_port=3041 ;;
-    task-shared) be_port=5050; fe_port=3051 ;;
+    task-e)      be_port=5050; fe_port=3051 ;;
+    task-shared) be_port=5100; fe_port=3101 ;;
     *)           be_port=5000; fe_port=3001; port_note="(표에 없는 폴더 '$task': 원본과 같은 기본 포트)" ;;
   esac
   be_port="${BE_PORT:-$be_port}"

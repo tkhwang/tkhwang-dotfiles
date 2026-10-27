@@ -46,8 +46,11 @@ for task in "${tasks[@]}"; do
       echo "같음    $dst"
       continue
     fi
-    cp "$root/$script" "$dst"
-    chmod +x "$dst"
+    # 새 파일로 바꿔 끼운다. bash 는 스크립트를 읽어 가며 실행하므로, 덮어쓰면 돌고 있는
+    # herdr-dev.sh watch 가 바뀐 내용을 엉뚱한 위치부터 읽는다. mv 면 돌던 프로세스는 옛 파일을 계속 읽는다
+    cp "$root/$script" "$dst.tmp.$$"
+    chmod +x "$dst.tmp.$$"
+    mv -f "$dst.tmp.$$" "$dst"
     echo "copied → $dst"
   done
 done

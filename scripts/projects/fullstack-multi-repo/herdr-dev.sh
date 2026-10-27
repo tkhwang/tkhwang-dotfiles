@@ -16,18 +16,23 @@
 # task 별 포트와 서버 명령은 ../dev-ports.sh 에 정의돼 있다. agent-dev.sh(agent 가 background 로 띄움)도
 # 같은 정의를 쓴다. task 하나에 서버는 한 벌이라, 포트가 이미 열려 있으면 up 은 탭을 만들지 않고 멈춘다.
 #
-# 사이드바 표시: up 은 감시 프로세스(watch)를 백그라운드로 띄운다. 5초마다 두 서버 포트가 LISTEN 중인지
-# 보고, 열려 있는 것만 workspace 토큰 $fe, $be 로 보고한다 (예: "fe :3011 · be :5010"). 서버가 내려가면
-# 토큰이 사라지고, dev 탭이 닫히면 감시도 끝난다. ~/.config/herdr/config.toml 의 [ui.sidebar.spaces]
-# rows 에 $fe, $be 토큰이 있어야 보인다.
+# 사이드바 표시: up 은 감시 프로세스(watch)를 백그라운드로 띄운다. 5초마다 두 서버 포트를 이 task 폴더의
+# 프로세스가 LISTEN 중인지 보고, 열려 있는 것만 누가 띄웠는지에 따라 workspace 토큰으로 보고한다.
+#   herdr 탭이나 사람이 띄운 서버   $fe, $be              예) "🧑 fe:3011 · be:5010" (첫 토큰에만 🧑)
+#   agent-dev.sh 가 띄운 서버       $fe_agent, $be_agent  예) "🤖 fe:3011 · be:5010" (첫 토큰에만 🤖)
+#   둘이 섞이면 폭을 넘지 않게 🤖 만 붙인다                예) "fe:3011 · 🤖 be:5010"
+# agent-dev.sh 도 up·restart 때 watch-start 로 같은 감시를 켠다. 서버가 내려가면 토큰이 사라지고, dev 탭도
+# 이 task 의 서버도(기동 중인 agent-dev 서버 포함) 15초 넘게 없으면 감시가 끝난다.
+# ~/.config/herdr/config.toml 의 [ui.sidebar.spaces] rows 에 네 토큰이 있어야 보인다 (색은 거기서 정한다).
 #
-# usage: ./herdr-dev.sh up|down|restart|status|ports
+# usage: ./herdr-dev.sh up|down|restart|status|ports|watch-start
 #   up       dev 탭을 만들고 네 pane 에 명령을 실행한다 (이미 있으면 감시만 확인한다)
-#   down     각 pane 에 ctrl+c 를 보내 끝낸 뒤 탭을 닫고 감시를 멈춘다
+#   down     각 pane 에 ctrl+c 를 보내 끝낸 뒤 탭을 닫는다. 탭 밖에서 띄운 서버가 남아 있지 않으면 감시도 멈춘다
 #   restart  down 뒤 up
 #   status   이 task 의 dev 탭 pane, 열린 포트, 감시 상태, 다른 task 의 dev 탭을 보여준다
 #   ports    이 task 의 포트와 실행될 명령을 보여준다 (herdr 밖에서도 됨)
-#   watch    (up 이 내부적으로 띄움) 포트 감시 루프
+#   watch-start  감시만 켠다 (이미 돌고 있으면 그대로). agent-dev.sh 가 부른다
+#   watch    (up·watch-start 가 내부적으로 띄움) 포트 감시 루프
 #
 # env 로 바꿀 수 있다:
 #   BE_PORT FE_PORT                          포트 표 대신 쓸 값 (dev-ports.sh 가 읽는다)
@@ -171,20 +176,60 @@ launch() {
 pidfile="$base/.herdr-dev.watch.pid"
 self="$base/$(basename "$0")"
 
-port_open() {  # $1: 포트. LISTEN 중이면 0
-  lsof -nP -iTCP:"$1" -sTCP:LISTEN -t >/dev/null 2>&1
+port_of() { if [ "$1" = be ]; then echo "$be_port"; else echo "$fe_port"; fi; }
+
+# $1: be|fe → 포트를 잡은 쪽
+#   agent  agent-dev.sh 가 띄운 서버 (listener 의 process group 이 ./.agent-dev/<be|fe>.pid 와 같다)
+#   user   herdr 탭이나 사람이 띄운 이 task 서버 (listener 가 이 task 폴더 안에서 돈다)
+#   빈 문자열  꺼짐, 또는 같은 포트를 쓰는 다른 폴더의 서버 (표에 없는 폴더는 _base 와 같은 포트를 쓴다)
+port_owner() {
+  local pid pg
+  pid="$(port_pid "$(port_of "$1")")"
+  [ -n "$pid" ] || return 0
+  pg="$(cat "$base/.agent-dev/$1.pid" 2>/dev/null || true)"
+  if [ -n "$pg" ] && [ "$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')" = "$pg" ]; then echo agent; return 0; fi
+  case "$(pid_cwd "$pid")/" in "$base"/*) echo user ;; esac
 }
 
-# 열린 포트만 토큰으로 보고하고, 닫힌 포트의 토큰은 지운다. ttl 이 있어 감시가 죽으면 사라진다
+# agent-dev.sh 가 띄운 서버 process group 이 살아 있으면 0 (포트를 열기 전 기동 중일 때도)
+agent_alive() {
+  local s pg
+  for s in be fe; do
+    pg="$(cat "$base/.agent-dev/$s.pid" 2>/dev/null)" || continue
+    [ -n "$pg" ] && kill -0 -- "-$pg" 2>/dev/null && return 0
+  done
+  return 1
+}
+
+# 사이드바에 보여 줄 이 task 의 서버가 있거나 곧 생기면 0
+servers_alive() {
+  agent_alive || [ -n "$(port_owner be)" ] || [ -n "$(port_owner fe)" ]
+}
+
+# 열린 포트만 띄운 쪽의 토큰으로 보고하고, 나머지 토큰은 지운다. ttl 이 있어 감시가 죽으면 사라진다.
+# 띄운 쪽 이모지(사람·herdr 탭 🧑, agent-dev 🤖)는 그쪽의 첫 토큰에만 붙인다.
+# 기본 사이드바 폭(26칸)에서 이 줄은 20칸이다. 이모지가 2칸이라 콜론 앞 공백을 빼야 "🤖 fe:3011 · be:5010" 이
+# 딱 맞는다. 사람과 agent 가 섞이면 이모지 둘로 23칸이 되므로 🧑 는 빼고 🤖 만 붙인다 (색으로도 구분된다).
+# 넘치면 herdr 가 토큰을 번갈아 줄여 포트가 안 보인다
 report_servers() {
-  local args=()
-  if port_open "$fe_port"; then args+=(--token "fe=fe :$fe_port"); else args+=(--clear-token fe); fi
-  if port_open "$be_port"; then args+=(--token "be=be :$be_port"); else args+=(--clear-token be); fi
+  local args=() s owner fe_owner be_owner hum="🧑 " bot="🤖 "
+  fe_owner="$(port_owner fe)"
+  be_owner="$(port_owner be)"
+  if [ "$fe_owner" = agent ] || [ "$be_owner" = agent ]; then hum=""; fi
+  for s in fe be; do
+    if [ "$s" = fe ]; then owner="$fe_owner"; else owner="$be_owner"; fi
+    case "$owner" in
+      user)  args+=(--token "$s=$hum$s:$(port_of "$s")" --clear-token "${s}_agent"); hum="" ;;
+      agent) args+=(--token "${s}_agent=$bot$s:$(port_of "$s")" --clear-token "$s"); bot="" ;;
+      *)     args+=(--clear-token "$s" --clear-token "${s}_agent") ;;
+    esac
+  done
   herdr workspace report-metadata "$ws" --source herdr-dev --ttl-ms 15000 "${args[@]}" >/dev/null
 }
 
 clear_servers() {
-  herdr workspace report-metadata "$ws" --source herdr-dev --clear-token fe --clear-token be >/dev/null 2>&1 || true
+  herdr workspace report-metadata "$ws" --source herdr-dev \
+    --clear-token fe --clear-token be --clear-token fe_agent --clear-token be_agent >/dev/null 2>&1 || true
 }
 
 watch_pid() {  # 살아 있는 감시 pid, 없으면 빈 문자열
@@ -198,9 +243,14 @@ start_watch() {
   local pid
   pid="$(watch_pid)"
   if [ -n "$pid" ]; then echo "  감시 실행 중 (pid $pid)"; return 0; fi
-  nohup "$self" watch >/dev/null 2>&1 &
+  # 자기 process group 으로 띄운다. agent 의 셸 도구가 명령을 끝내며 process group 을 정리해도 살아남게
+  set -m
+  nohup "$self" watch >/dev/null 2>&1 < /dev/null &
+  pid=$!
+  set +m
   disown 2>/dev/null || true
-  echo "  감시 시작 (pid $!): 열린 서버 포트를 사이드바에 표시"
+  echo "$pid" > "$pidfile"   # 감시도 시작하며 쓰지만, 그 전에 다시 불려도 하나만 뜨게 바로 적는다
+  echo "  감시 시작 (pid $pid): 열린 서버 포트를 사이드바에 표시"
 }
 
 stop_watch() {
@@ -210,14 +260,27 @@ stop_watch() {
   clear_servers
 }
 
-# up 이 백그라운드로 띄우는 루프. dev 탭이 없어지거나 herdr 가 계속 응답하지 않으면 토큰을 지우고 끝난다
+# 탭을 내린 뒤: agent-dev.sh 등 탭 밖에서 띄운 이 task 의 서버가 남아 있으면 감시를 켜 둔다
+finish_watch() {
+  if servers_alive; then
+    echo "  이 task 의 서버가 아직 떠 있어 (agent-dev 등) 사이드바 감시를 유지합니다"
+    start_watch
+  else
+    stop_watch
+  fi
+}
+
+# up·watch-start 가 백그라운드로 띄우는 루프. dev 탭도 이 task 의 서버도 3번 연속(15초) 없거나,
+# herdr 가 계속 응답하지 않으면 토큰을 지우고 끝난다. 연속 3번은 restart 의 down~up 사이를 넘기려는 것이다
 cmd_watch() {
-  local fails=0
+  local fails=0 idle=0
   echo $$ > "$pidfile"
   trap 'clear_servers; rm -f "$pidfile"; exit 0' INT TERM
-  while [ -n "$(find_tab 2>/dev/null)" ]; do
+  while :; do
     if report_servers 2>/dev/null; then fails=0; else fails=$((fails + 1)); fi
     [ "$fails" -ge 5 ] && break
+    if [ -n "$(find_tab 2>/dev/null)" ] || servers_alive; then idle=0; else idle=$((idle + 1)); fi
+    [ "$idle" -ge 3 ] && break
     sleep 5
   done
   clear_servers
@@ -273,7 +336,7 @@ cmd_down() {
   tab="$(find_tab)"
   if [ -z "$tab" ]; then
     echo "$label 탭이 없습니다"
-    stop_watch
+    finish_watch
     return 0
   fi
   panes="$(tab_panes "$tab")"
@@ -291,7 +354,7 @@ cmd_down() {
   done
   herdr tab close "$tab" >/dev/null
   echo "탭을 닫았습니다: $label ($tab)"
-  stop_watch
+  finish_watch
 }
 
 cmd_status() {
@@ -308,13 +371,18 @@ cmd_status() {
           printf '  %-8s %-10s %s\n' "$p" "$l" "$(fg_cmd "$p")"
         done
   fi
-  if [ -n "$tab" ]; then
-    local pid open=()
-    port_open "$fe_port" && open+=("fe :$fe_port"); port_open "$be_port" && open+=("be :$be_port")
-    pid="$(watch_pid)"
-    if [ -n "$pid" ]; then pid="pid $pid"; else pid="꺼짐 (up 으로 켜짐)"; fi
-    echo "  열린 서버: ${open[*]:-(없음)}   감시: $pid"
-  fi
+  # 탭이 없어도 agent-dev.sh 가 띄운 서버와 그 감시가 있을 수 있어 늘 보여준다
+  local pid s open=() agent_up=0
+  for s in fe be; do
+    case "$(port_owner "$s")" in
+      user)  open+=("$s :$(port_of "$s") (herdr 탭·사람)") ;;
+      agent) open+=("$s :$(port_of "$s") (agent)"); agent_up=1 ;;
+    esac
+  done
+  [ "$agent_up" = 0 ] && agent_alive && open+=("(agent-dev 서버 기동 중)")
+  pid="$(watch_pid)"
+  if [ -n "$pid" ]; then pid="pid $pid"; else pid="꺼짐 (herdr-dev.sh up 이나 agent-dev.sh up 이 켠다)"; fi
+  echo "  열린 서버: ${open[*]:-(없음)}   사이드바 감시: $pid"
   [ "${HERDR_DEV_NO_OTHERS:-}" = 1 ] || print_other_tabs   # herdr-dev-all.sh 는 폴더마다 반복되므로 끈다
   return $rc
 }
@@ -324,6 +392,7 @@ case "${1:-}" in
   down)    cmd_down ;;
   restart) cmd_down; cmd_up ;;
   status)  cmd_status ;;
+  watch-start) start_watch ;;
   watch)   cmd_watch ;;
   *)       awk 'NR > 1 && !/^#/ { exit } NR > 1 { sub(/^# ?/, ""); print }' "$0"; exit 2 ;;
 esac
