@@ -2,7 +2,7 @@
 // (ports.js, from the spaces-dev mod), code marked "dev ports"; updateColors waits for
 // shared colors after a start (marked "space colors"); agent status glows and the
 // navigation commands from filipores/herdr-spaces-status@4881e68 (navigation.js,
-// marked "status glow"); the active space is tinted yellow, with a yellow bar on the
+// marked "status glow"); the active space is tinted cyan, with a cyan bar on the
 // left and its name in bold (marked "current highlight").
 // Better Spaces: a native spaces sidebar with right-aligned branches, nested
 // worktrees, and a PR status line. Repository facts follow each space's first
@@ -118,9 +118,9 @@ function workPulse(id, t) {
 }
 
 // current highlight: a plain selected background looked like the status outlines, and most
-// space colors are green or teal like the done glow, so the active row is yellow (clear of
-// the blocked orange): a tint and a bar on the left.
-const CURRENT = "#facc15";
+// space colors are green or teal like the done glow, so the active row is cyan (clear of
+// the blocked orange, which yellow sat too close to): a tint and a bar on the left.
+const CURRENT = "#22d3ee";
 function currentBar() {
   return div().absolute().left(0).top(6).bottom(6).w(3).rounded(2).bg(CURRENT);
 }
