@@ -93,9 +93,9 @@ function workPulse(id, t) {
 
 const statusGlow = (a, t) => [...(a.status === "working" ? [workPulse(a.address, t)] : []), ...glow(a.status)];
 
-// current highlight: as in the Spaces list, the focused agent's row is yellow, a tint and
+// current highlight: as in the Spaces list, the focused agent's row is cyan, a tint and
 // a bar on the left, so it reads apart from the status outlines and the green space colors.
-const CURRENT = "#facc15";
+const CURRENT = "#22d3ee";
 const currentBar = () => div().absolute().left(0).top(6).bottom(6).w(3).rounded(2).bg(CURRENT);
 
 export default class Agents extends View {
