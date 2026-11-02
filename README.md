@@ -36,6 +36,26 @@ Notable customizations (herdr >= 0.8.2):
 - `theme.custom.active_row_bg` — makes the current repo/branch row visible in the left pane (the old `surface_dim` override stopped working in 0.8.2, which switched active rows to this dedicated key)
 - `theme.custom.teal` — turns the "agent waiting for you" indicator red
 
+## Herdr app
+
+The [Herdr app](https://herdr.dev/core/) (herdr-core desktop window) keeps its layout and mods in `~/.config/herdr-app`. The customized ones live in [`herdr-app/`](herdr-app/) as copies, not symlinks: the app rewrites the layout file as the window is used.
+
+```bash
+./herdr-app/sync.sh backup   # ~/.config/herdr-app -> herdr-app/ (run after changing a mod or the layout)
+./herdr-app/sync.sh apply    # herdr-app/ -> ~/.config/herdr-app (replaced files go to ~/.config/herdr-app.bak-<time>/)
+```
+
+After a first `apply`, restart Herdr (it sees new mod folders at start) and pick the `main-dev` layout with ⌘⇧L.
+
+- `layouts/main-dev.json` — clone of the shipped `main` layout; its spaces, agents and changes blocks point to the mods below
+- `mods/spaces-dev` — dev server ports under each space (`🧑 fe:3011 · be:5010`, `🤖` for agent-started servers), read from the files `herdr-dev.sh watch` writes (see `scripts/projects/fullstack-multi-repo/`); patch: `ports.js` and lines marked `dev ports`
+- `mods/agents-dev` — "Grouped by space" headers with the space's colored letter, bold name, separators and git branch; patch marked `space headers`
+- `mods/changes-dev` — in a workbranch wrapper folder (not a repo, repos right under it such as `backend/` and `frontend/`) a repo picker with per-repo change counts; commits go to the picked repo; patch marked `wrapper repos`
+- `settings.json`, `keys.json` — app look and keys
+- copy-on-select ([jspoynor/herdr-copy-on-select](https://github.com/jspoynor/herdr-copy-on-select)) — copies a terminal selection on mouse release; it has no license, so `apply` downloads it at a pinned commit instead of keeping a copy here
+
+The `-dev` mods are `mod.clone`s of Herdr's own mods (version 0.1.11, recorded as `cloned_from` in each `mod.json`), licensed Apache-2.0 ([`LICENSE-herdr`](herdr-app/LICENSE-herdr)). Clones get no Herdr updates: after an update changes a shipped mod, clone it again and re-apply the marked patch.
+
 ## mco
 
 [mco](https://github.com/mco-org/mco) workflow helpers live in [`mco/mco-workflow.zsh`](mco/mco-workflow.zsh), symlinked to `~/.mco-workflow.zsh` and sourced from `~/.zshrc`.
