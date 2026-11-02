@@ -142,7 +142,10 @@
                           "id": "changes",
                           "type": "block",
                           "content": {
-                            "mod": "changes-dev"
+                            "mod": "better-changes",
+                            "props": {
+                              "mode": "sidebar"
+                            }
                           }
                         }
                       ],

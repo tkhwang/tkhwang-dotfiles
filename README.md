@@ -47,14 +47,17 @@ The [Herdr app](https://herdr.dev/core/) (herdr-core desktop window) keeps its l
 
 After a first `apply`, restart Herdr (it sees new mod folders at start) and pick the `main-dev` layout with ⌘⇧L.
 
-- `layouts/main-dev.json` — clone of the shipped `main` layout; its spaces, agents and changes blocks point to the mods below
+- `layouts/main-dev.json` — clone of the shipped `main` layout; its spaces and agents blocks point to the `-dev` mods below, its Changes slot to `better-changes`
 - `mods/spaces-dev` — dev server ports under each space (`🧑 fe:3011 · be:5010`, `🤖` for agent-started servers), read from the files `herdr-dev.sh watch` writes (see `scripts/projects/fullstack-multi-repo/`); patch: `ports.js` and lines marked `dev ports`
 - `mods/agents-dev` — "Grouped by space" headers with the space's colored letter, bold name, separators and git branch; patch marked `space headers`
 - `mods/changes-dev` — in a workbranch wrapper folder (not a repo, repos right under it such as `backend/` and `frontend/`) a repo picker with per-repo change counts; commits go to the picked repo; patch marked `wrapper repos`
+- `mods/better-changes` — [munza/herdr-mods](https://github.com/munza/herdr-mods/tree/main/better-changes) at `77d94f7` (staged/unstaged groups with stage buttons, tree/flat list, inline/side-by-side diff in one reusable tab), in the Changes slot. Patched with the same `wrapper repos` repo picker (it commits staged changes of the picked repo only), and `mod.json` `place` is `none` so it doesn't also dock a second right sidebar. `changes-dev` stays installed: put it back in the layout's `changes` block to switch.
 - `settings.json`, `keys.json` — app look and keys
 - copy-on-select ([jspoynor/herdr-copy-on-select](https://github.com/jspoynor/herdr-copy-on-select)) — copies a terminal selection on mouse release; it has no license, so `apply` downloads it at a pinned commit instead of keeping a copy here
 
 The `-dev` mods are `mod.clone`s of Herdr's own mods (version 0.1.11, recorded as `cloned_from` in each `mod.json`), licensed Apache-2.0 ([`LICENSE-herdr`](herdr-app/LICENSE-herdr)). Clones get no Herdr updates: after an update changes a shipped mod, clone it again and re-apply the marked patch.
+
+`better-changes` is Apache-2.0 ([`LICENSE-herdr-mods`](herdr-app/LICENSE-herdr-mods), [`NOTICE-herdr-mods`](herdr-app/NOTICE-herdr-mods)). To update it, copy `better-changes/mods/better-changes/` from that repo and re-apply the `wrapper repos` patch and the `place` change.
 
 ## mco
 
