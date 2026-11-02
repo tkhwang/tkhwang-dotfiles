@@ -5,9 +5,9 @@
 # task 하나에 서버는 한 벌이다. 이 폴더의 서버가 이미 떠 있으면(herdr 탭이든 사용자든) 그대로 쓰고,
 # 내리거나 다시 띄우는 것은 agent-dev.sh 가 띄운 서버만 한다. 포트를 다른 폴더의 프로세스가 잡고 있으면 멈춘다.
 # 서버는 자기 process group 으로 띄워 pnpm 아래 node 까지 한 번에 내린다. pid·log 는 ./.agent-dev/ 에 둔다.
-# herdr 안에서 실행하면 up·restart 때 herdr-dev.sh watch-start 로 사이드바 감시를 켜서, herdr 탭으로 띄운
-# 서버처럼 열린 포트가 사이드바에 보인다. agent-dev 가 띄운 서버는 workspace 토큰 $fe_agent, $be_agent 로
-# 보고되어 사람이 띄운 서버($fe, $be)와 구분된다. herdr 밖이거나 실패해도 서버에는 영향이 없다.
+# herdr 나 Herdr 앱 안에서 실행하면 up·restart 때 herdr-dev.sh watch-start 로 사이드바 감시를 켜서, herdr 탭으로
+# 띄운 서버처럼 열린 포트가 사이드바에 보인다. agent-dev 가 띄운 서버는 workspace 토큰 $fe_agent, $be_agent
+# (Herdr 앱은 🤖 줄)로 보고되어 사람이 띄운 서버($fe, $be)와 구분된다. herdr 밖이거나 실패해도 서버에는 영향이 없다.
 #
 # usage: ./agent-dev.sh <명령> [be|fe]
 #   up [be|fe]        서버를 띄우고 포트가 열릴 때까지 기다린다 (기본 둘 다)
@@ -80,9 +80,10 @@ launch() {
   echo "$(name_of "$s") 시작 (pgid $pg): $cmd"
 }
 
-# herdr 안이면 열린 서버 포트를 사이드바에 보여주는 감시를 켠다 (이미 돌고 있으면 그대로). 서버가 다 내려가면 감시가 스스로 끝난다
+# herdr(HERDR_ENV=1)나 Herdr 앱(HC_TERMINAL_ID) 안이면 열린 서버 포트를 사이드바에 보여주는 감시를 켠다
+# (이미 돌고 있으면 그대로). 서버가 다 내려가면 감시가 스스로 끝난다
 sidebar_watch() {
-  [ "${HERDR_ENV:-}" = 1 ] && [ -x "$base/herdr-dev.sh" ] || return 0
+  { [ "${HERDR_ENV:-}" = 1 ] || [ -n "${HC_TERMINAL_ID:-}" ]; } && [ -x "$base/herdr-dev.sh" ] || return 0
   "$base/herdr-dev.sh" watch-start 2>/dev/null | sed 's/^ */herdr 사이드바: /' || true
 }
 

@@ -15,15 +15,16 @@ rows = [
 
 # Space(워크스페이스) 행에 실행 중인 dev 서버 포트를 보여준다.
 # 값은 각 작업 폴더의 herdr-dev.sh 감시가 보고한다 (열린 포트만).
-#   $fe, $be              herdr 탭이나 사람이 띄운 서버 (초록)    예) 🧑 fe:3011 · be:5010
-#   $fe_agent, $be_agent  agent-dev.sh 로 agent 가 띄운 서버 (주황) 예) 🤖 fe:3011 · be:5010
+#   $fe, $be              herdr 탭이나 사람이 띄운 서버 (yellow)  예) 🧑 fe:3011 · be:5010
+#   $fe_agent, $be_agent  agent-dev.sh 로 agent 가 띄운 서버 (cyan) 예) 🤖 fe:3011 · be:5010
+# 색은 이모지에 맞춘 catppuccin 값이다: 🧑 yellow #f9e2af, 🤖 sky #89dceb
 [ui.sidebar.spaces]
 rows = [
   ["state_icon", "workspace"],
   ["branch", "git_status"],
   [
-    { token = "$fe", fg = "#a6e3a1" }, { token = "$be", fg = "#a6e3a1" },
-    { token = "$fe_agent", fg = "#fab387" }, { token = "$be_agent", fg = "#fab387" },
+    { token = "$fe", fg = "#f9e2af" }, { token = "$be", fg = "#f9e2af" },
+    { token = "$fe_agent", fg = "#89dceb" }, { token = "$be_agent", fg = "#89dceb" },
   ],
 ]
 
