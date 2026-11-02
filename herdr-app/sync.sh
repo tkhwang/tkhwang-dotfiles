@@ -18,9 +18,10 @@ here="$(cd "$(dirname "$0")" && pwd)"
 live="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 
 # Mods kept here, each with a small patch: clones of Herdr's own mods (Apache-2.0, see
-# LICENSE-herdr), and better-changes from munza/herdr-mods (Apache-2.0, see
-# LICENSE-herdr-mods and NOTICE-herdr-mods).
-mods="spaces-dev agents-dev changes-dev better-changes"
+# LICENSE-herdr), and better-changes and better-spaces from munza/herdr-mods (Apache-2.0, see
+# LICENSE-herdr-mods and NOTICE-herdr-mods), and herdr-open-with-zed from atleugim/herdr-open-with-zed
+# (Apache-2.0, see LICENSE-herdr-open-with-zed).
+mods="spaces-dev agents-dev changes-dev better-changes better-spaces tabs-dev herdr-open-with-zed"
 files="layouts/main-dev.json settings.json keys.json"
 # Third-party mod installed from its repo instead of kept here.
 cos_repo="jspoynor/herdr-copy-on-select"

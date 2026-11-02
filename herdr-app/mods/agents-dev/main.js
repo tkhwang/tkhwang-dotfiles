@@ -68,6 +68,30 @@ function icon(p, size, color) {
   return p.tint ? svg(p.icon).size(size).flex_none().text_color(color) : image(p.icon).w(size).h(size).flex_none();
 }
 
+// status glow: the same row treatment as the Spaces list (better-spaces, from
+// filipores/herdr-spaces-status): done green, blocked orange, each with a faint fill
+// and layered outlines; working a thin foreground contour that breathes. Idle: nothing.
+const GLOW = { done: "#22c55e", blocked: "#f59e0b" };
+
+function glow(status) {
+  const color = GLOW[status];
+  if (!color) return [];
+  return [
+    div().absolute().inset(0).rounded(8).bg(`${color}18`),
+    ...["70", "38", "20", "10"].map((alpha, i) =>
+      div().absolute().inset(-i).rounded(8 + i).border(1).border_color(`${color}${alpha}`)),
+  ];
+}
+
+function workPulse(id, t) {
+  return div().id(`ag-pulse-${id}`).absolute().inset(0)
+    .loop("opacity", { from: 0.1, to: 0.24, period: 3200, easing: "ease-in-out" })
+    .children([1, 0.38, 0.16, 0.06].map((opacity, i) =>
+      div().absolute().inset(-i).rounded(8 + i).border(1).border_color(t.foreground).opacity(opacity)));
+}
+
+const statusGlow = (a, t) => [...(a.status === "working" ? [workPulse(a.address, t)] : []), ...glow(a.status)];
+
 export default class Agents extends View {
   init(_props, cx) {
     if (props()?.sortMenu) return;
@@ -285,6 +309,8 @@ export default class Agents extends View {
       if (collapsed) {
         return h_flex()
           .id(`ag-${a.address}`)
+          .relative() // status glow
+          .rounded(8) // status glow
           .h(26)
           .px(8)
           .flex_none()
@@ -292,6 +318,7 @@ export default class Agents extends View {
           .gap(4)
           .hover((s) => s.bg(t.hover))
           .on_click(() => run("pane.focus", { pane: a.pane }))
+          .children(statusGlow(a, t)) // status glow
           .child(div().flex_1().min_w(0).whitespace_nowrap().text_right().text_color(t.muted).child(String(i + 1)))
           .child(h_flex().w(14).flex_none().items_center().justify_center().child(this.status(t, a, true)));
       }
@@ -321,6 +348,7 @@ export default class Agents extends View {
       const name = full ? a.space_name || label(a) : more ?? (/^\d+$/.test(label(a)) ? a.program?.name || label(a) : label(a));
       return h_flex()
         .id(`ag-${a.address}`)
+        .relative() // status glow
         .px(8)
         .h(30)
         .flex_none()
@@ -336,6 +364,7 @@ export default class Agents extends View {
           cx.notify();
         })
         .on_click(() => run("pane.focus", { pane: a.pane }))
+        .children(statusGlow(a, t)) // status glow
         .when(Boolean(pic), el => el.child(div().id(`agent-fold-${a.address}`)
           .when(subs.length > 0, el => el.on_click((_e, cx) => {
             cx.stop_propagation();

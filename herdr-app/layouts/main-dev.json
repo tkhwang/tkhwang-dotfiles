@@ -33,7 +33,7 @@
                   "id": "spaces",
                   "type": "block",
                   "content": {
-                    "mod": "spaces-dev"
+                    "mod": "better-spaces"
                   },
                   "size": {
                     "weight": 1
@@ -83,7 +83,7 @@
               "id": "tabs",
               "type": "block",
               "content": {
-                "mod": "tabs"
+                "mod": "tabs-dev"
               },
               "size": {
                 "px": 42
