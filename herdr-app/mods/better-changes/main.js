@@ -39,8 +39,12 @@ const STATUS_POLL_MS = 10000;
 const TAB_OPEN_TIMEOUT_MS = 1500;
 
 // wrapper repos: a folder that isn't a Git repo itself but holds repos right under it
-// (a workbranch task: backend/ and frontend/ side by side). Prints those folders' names.
-const CHILD_REPOS = 'for d in */; do [ -e "$d.git" ] && printf "%s\\n" "${d%/}"; done; exit 0';
+// (a workbranch task: backend/ and frontend/ side by side). Prints those folders' names,
+// hidden ones included.
+const CHILD_REPOS = 'for d in */ .[!.]*/; do [ -e "$d.git" ] && printf "%s\\n" "${d%/}"; done; exit 0';
+// wrapper repos: the same folder on two machines is two wrappers, so a pick is kept per
+// machine and folder. A local folder's key is its path alone.
+const pickKey = (cwd, on) => (on ? `${on}\0${cwd}` : cwd);
 
 // Follow the active terminal unless the active tab is our diff viewer. Mod panes
 // have no terminal cwd, so that case must use the repository saved for the tab.
@@ -203,7 +207,7 @@ export default class Changes extends View {
         w.on === on &&
         (w.cwd === loc.cwd || (diffTab && w.choices.some((c) => c.root === loc.cwd))),
     );
-    const pick = wrapper?.choices.find((c) => c.name === this.picked[wrapper.cwd]);
+    const pick = wrapper?.choices.find((c) => c.name === this.picked[pickKey(wrapper.cwd, wrapper.on)]);
     return pick ? { loc: { cwd: pick.root, on: loc.on }, wrapper } : { loc, wrapper: null };
   }
 
@@ -225,11 +229,27 @@ export default class Changes extends View {
   }
 
   pickRepo(wrapper, name, cx) {
-    if (this.picked[wrapper.cwd] === name) return;
-    this.picked[wrapper.cwd] = name;
-    localStorage.setItem("better-changes.picked", JSON.stringify(this.picked));
+    const at = pickKey(wrapper.cwd, wrapper.on);
+    if (this.picked[at] === name) return;
+    this.picked[at] = name;
+    this.savePicked();
     this.refresh(cx);
     cx.notify();
+  }
+
+  savePicked() {
+    localStorage.setItem("better-changes.picked", JSON.stringify(this.picked));
+  }
+
+  // wrapper repos: when the picked repo is gone (deleted, or no longer a repo), rescan its
+  // wrapper. Without the pick listed, contextKey() moves to the wrapper and `finally`
+  // loads that, which picks a remaining repo. Returns whether the context moved.
+  async leaveGonePick(context) {
+    const { wrapper } = this.mode === "sidebar" && !this.source ? this.wrapperSpot() : { wrapper: null };
+    if (!wrapper) return false;
+    const choices = await this.childRepos(wrapper.cwd, wrapper.on).catch(() => null);
+    if (choices && context === this.contextKey()) wrapper.choices = choices;
+    return context !== this.contextKey();
   }
 
   // Include both cwd and machine: identical paths on different machines are
@@ -293,14 +313,16 @@ export default class Changes extends View {
             if (context !== this.contextKey()) return;
             if (choices.length) {
               this.wrappers[`${on ?? ""}\0${cwd}`] = { cwd, on: on ?? null, choices };
-              if (!choices.some((c) => c.name === this.picked[cwd])) {
+              const at = pickKey(cwd, on);
+              if (!choices.some((c) => c.name === this.picked[at])) {
                 // First visit, or the picked repo is gone: the first with changes, else the first.
-                this.picked[cwd] = (choices.find((c) => c.count > 0) ?? choices[0]).name;
-                localStorage.setItem("better-changes.picked", JSON.stringify(this.picked));
+                this.picked[at] = (choices.find((c) => c.count > 0) ?? choices[0]).name;
+                this.savePicked();
               }
               return;
             }
           }
+          if (await this.leaveGonePick(context)) return;
           this.root = null;
           this.files = [];
           this.rows = [];
@@ -357,7 +379,9 @@ export default class Changes extends View {
           if (this.path && !this.diffLoading) this.loadDiff(cx);
         }
       } catch (error) {
-        if (context === this.contextKey()) this.error = error.message;
+        // wrapper repos: Git can't start in a deleted repo folder; leave a pick that is gone.
+        if (context === this.contextKey() && !(await this.leaveGonePick(context)))
+          this.error = error.message;
       } finally {
         this.loading = false;
         cx.notify();
@@ -832,14 +856,14 @@ export default class Changes extends View {
     if (this.error && this.files.length)
       root.child(div().px(12).py(6).text_color(t.ansi1).child(this.error));
     if (this.note) root.child(div().px(12).py(6).text_color(t.ansi1).child(this.note));
-    root.child(this.renderCommitFooter(t, wrapper ? this.picked[wrapper.cwd] : null));
+    root.child(this.renderCommitFooter(t, wrapper ? this.picked[pickKey(wrapper.cwd, wrapper.on)] : null));
     return root;
   }
 
   // wrapper repos: one button per repo under the wrapper folder with its changed-file
   // count, and the picked repo's branch on the right.
   renderRepoBar(wrapper, t) {
-    const picked = this.picked[wrapper.cwd];
+    const picked = this.picked[pickKey(wrapper.cwd, wrapper.on)];
     return h_flex()
       .h(36)
       .px(8)

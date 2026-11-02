@@ -13,3 +13,9 @@ display title changed to Spaces Status.
 
 Herdr's runtime, fonts and icon assets are not redistributed here.
 This is an independent community mod, not an official Herdr release.
+
+---
+Addendum for this distribution (tkhwang-dotfiles): the spaces-glow mod and its
+mods/spaces-glow/mod.json are not included. Its glows and navigation commands
+are merged into mods/better-spaces (navigation.js, and main.js lines marked
+"status glow").

@@ -14,8 +14,12 @@ const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.a
 const countLines = (text) => text ? text.split("\n").length - Number(text.endsWith("\n")) : 0;
 
 // wrapper repos: a folder that isn't a git repo itself but holds repos right under it
-// (a workbranch task: backend/ and frontend/ side by side). Prints those folders' names.
-const CHILD_REPOS = 'for d in */; do [ -e "$d.git" ] && printf "%s\\n" "${d%/}"; done; exit 0';
+// (a workbranch task: backend/ and frontend/ side by side). Prints those folders' names,
+// hidden ones included.
+const CHILD_REPOS = 'for d in */ .[!.]*/; do [ -e "$d.git" ] && printf "%s\\n" "${d%/}"; done; exit 0';
+// wrapper repos: the same folder on two machines is two wrappers, so a pick is kept per
+// machine and folder. A local folder's key is its path alone.
+const pickKey = ({ cwd, on }) => (on ? `${on}\0${cwd}` : cwd);
 
 // Numbers each diff line once, so a frame only draws the rows on screen.
 function diffRows(lines) {
@@ -36,7 +40,10 @@ export default class Changes extends View {
     this.files = []; this.rows = []; this.diffWidth = 0; this.message = ""; this.handle = cx.focus_handle();
     // wrapper repos: the repos under the shown wrapper folder, and the one picked per folder.
     this.choices = null; this.branch = null;
-    try { this.picked = JSON.parse(localStorage.getItem("picked") ?? "{}"); } catch { this.picked = {}; }
+    try {
+      const saved = JSON.parse(localStorage.getItem("picked") ?? "{}");
+      this.picked = saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    } catch { this.picked = {}; }
     this.input = InputState.new({ placeholder: "Commit message" });
     this.input.on("change", (_e, cx) => {
       const hadMessage = Boolean(this.message.trim());
@@ -53,7 +60,7 @@ export default class Changes extends View {
   // wrapper repos: what the panel shows is where the focused terminal is, plus the repo picked there.
   key() {
     const loc = location();
-    return JSON.stringify([loc, this.picked[loc.cwd] ?? null]);
+    return JSON.stringify([loc, this.picked[pickKey(loc)] ?? null]);
   }
 
   savePicked() {
@@ -61,9 +68,9 @@ export default class Changes extends View {
   }
 
   pickRepo(name, cx) {
-    const { cwd } = location();
-    if (!cwd || this.picked[cwd] === name) return;
-    this.picked[cwd] = name;
+    const loc = location(), at = pickKey(loc);
+    if (!loc.cwd || this.picked[at] === name) return;
+    this.picked[at] = name;
     this.savePicked();
     this.refresh(cx);
     cx.notify();
@@ -119,11 +126,12 @@ export default class Changes extends View {
           if (this.key() !== context) return;
           if (!choices.length) { this.choices = null; this.root = null; this.files = []; this.setLines([]); this.open = null; this.error = "Not a git repository"; return; }
           this.choices = choices;
-          pick = choices.find((r) => r.name === this.picked[cwd]);
+          const at = pickKey({ cwd, on });
+          pick = choices.find((r) => r.name === this.picked[at]);
           if (!pick) {
             // First visit (or the picked one is gone): the first repo with changes, else the first.
             pick = choices.find((r) => r.count > 0) ?? choices[0];
-            this.picked[cwd] = pick.name;
+            this.picked[at] = pick.name;
             this.savePicked();
             context = this.context = this.key();
           }
@@ -236,7 +244,7 @@ export default class Changes extends View {
   // wrapper repos: one button per repo under the wrapper folder, with its changed-file count;
   // the picked repo's branch on the right.
   repoBar(t) {
-    const picked = this.picked[location().cwd];
+    const picked = this.picked[pickKey(location())];
     return h_flex().h(36).flex_none().px(8).gap(4).items_center().border_b(1).border_color(t.border)
       .children(this.choices.map((r) => {
         const on = r.name === picked;
@@ -254,7 +262,7 @@ export default class Changes extends View {
     if (this.key() !== this.context) this.refresh(cx);
     const t = theme(), add = this.files.reduce((n, f) => n + f.add, 0), del = this.files.reduce((n, f) => n + f.del, 0);
     const enabled = Boolean(this.message.trim() && this.root && !this.busy && !this.loading);
-    const target = this.choices ? this.picked[location().cwd] : null;
+    const target = this.choices ? this.picked[pickKey(location())] : null;
     return v_flex().id("changes").size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background).border_1().border_color(t.border).text_color(t.foreground).text_size(13).track_focus(this.handle)
       .on_key_down((e, cx) => {
         if (e.key === "escape" && this.typing) { this.typing = false; this.handle.focus(); cx.stop_propagation(); cx.notify(); }

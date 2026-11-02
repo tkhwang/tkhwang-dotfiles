@@ -14,7 +14,7 @@ export const portsDir = () => `${home()}/.local/state/herdr-dev`;
 export async function readPorts() {
   const dir = portsDir(), now = Date.now() / 1000;
   /** @type {Record<string, any[]>} */
-  const out = {};
+  const out = Object.create(null); // a space named "__proto__" stays a plain key
   let names;
   try { names = await fs.readdir(dir); } catch { return out; }
   for (const name of names) {

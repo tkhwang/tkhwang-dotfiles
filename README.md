@@ -42,8 +42,10 @@ The [Herdr app](https://herdr.dev/core/) (herdr-core desktop window) keeps its l
 
 ```bash
 ./herdr-app/sync.sh backup   # ~/.config/herdr-app -> herdr-app/ (run after changing a mod or the layout)
-./herdr-app/sync.sh apply    # herdr-app/ -> ~/.config/herdr-app (replaced files go to ~/.config/herdr-app.bak-<time>/)
+./herdr-app/sync.sh apply    # herdr-app/ -> ~/.config/herdr-app (replaced files go to ~/.config/herdr-app.bak-<time>-<pid>/)
 ```
+
+Both copy only the mods and files named in `sync.sh` (`mods`, `files`, plus copy-on-select on `apply`); any other mod in `~/.config/herdr-app` is neither backed up nor replaced.
 
 After a first `apply`, restart Herdr (it sees new mod folders at start) and pick the `main-dev` layout with ⌘⇧L.
 

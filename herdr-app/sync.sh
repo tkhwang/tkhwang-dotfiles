@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Keep the Herdr app (herdr.dev/core) layout and mods in this repo.
 #
-#   ./herdr-app/sync.sh backup   copy the live ~/.config/herdr-app files into this folder
-#   ./herdr-app/sync.sh apply    restore this folder into ~/.config/herdr-app
+#   ./herdr-app/sync.sh backup   copy the live mods and files listed below into this folder
+#   ./herdr-app/sync.sh apply    restore them into ~/.config/herdr-app
 #
 # Files are copied, not linked: the app rewrites the layout file as you use the window
-# (panel shown, sizes), so a link would keep the repo dirty.
+# (panel shown, sizes), so a link would keep the repo dirty. Other mods in the app folder
+# are neither backed up nor replaced.
 #
-# apply moves whatever it replaces to ~/.config/herdr-app.bak-<time>/ (outside the app folder,
-# so the app never loads a backup as a mod), installs copy-on-select from its own repo at a
-# pinned commit (it has no license, so it isn't copied here), and checks each mod. The app sees
+# apply copies each changed mod or file next to the app folder first, then moves the one it
+# replaces to ~/.config/herdr-app.bak-<time>-<pid>/ (outside the app folder, so the app never
+# loads a backup as a mod) and the copy into place. It installs copy-on-select from its own
+# repo at a pinned commit (it has no license, so it isn't copied here), and checks each mod. The app sees
 # a new mod folder only when it starts, so restart Herdr after a first apply, then pick the
 # layout with ⌘⇧L or `herdr-app do layout.switch '{"name":"main-dev"}'`.
 set -euo pipefail
@@ -57,38 +59,52 @@ stash() {
   echo "  backed up $1 -> $dest"
 }
 
+# Moves the staged copy of `path` (relative to the app folder) into place, stashing the live
+# one. Both moves stay on one disk, so a failed copy never gets this far.
+swap() {
+  if [ -e "$live/$1" ]; then stash "$1"; fi
+  mkdir -p "$(dirname "$live/$1")"
+  mv "$stage/$1" "$live/$1"
+}
+
 apply() {
-  local m f tmp
-  stamp="$(date +%Y%m%d-%H%M%S)"
+  local m f cos="$live/mods/copy-on-select"
+  # The process id keeps two runs in the same second apart.
+  stamp="$(date +%Y%m%d-%H%M%S)-$$"
   mkdir -p "$live/mods" "$live/layouts"
+  # Copies are staged beside the app folder, not in it, so the app never loads a partial mod.
+  stage="$(mktemp -d "$live.new-XXXXXX")"
+  trap 'rm -rf "$stage"' EXIT
   for m in $mods; do
     if [ -d "$live/mods/$m" ]; then
       diff -rq -x '*.d.ts' -x jsconfig.json "$here/mods/$m" "$live/mods/$m" >/dev/null 2>&1 && { echo "same: mods/$m"; continue; }
-      stash "mods/$m"
     fi
-    rsync -a "$here/mods/$m/" "$live/mods/$m/"
+    mkdir -p "$stage/mods"
+    rsync -a "$here/mods/$m/" "$stage/mods/$m/"
+    swap "mods/$m"
     echo "installed mods/$m"
   done
   for f in $files; do
     if [ -f "$live/$f" ]; then
       cmp -s "$here/$f" "$live/$f" && { echo "same: $f"; continue; }
-      stash "$f"
     fi
-    mkdir -p "$live/$(dirname "$f")"
-    cp "$here/$f" "$live/$f"
+    mkdir -p "$stage/$(dirname "$f")"
+    cp "$here/$f" "$stage/$f"
+    swap "$f"
     echo "installed $f"
   done
-  if [ -d "$live/mods/copy-on-select" ]; then
-    echo "kept: mods/copy-on-select"
+  # copy-on-select counts as installed only with both files and `.revision` naming the
+  # pinned commit. `.revision` moves in with the files, so a failed install never has it.
+  if [ -f "$cos/main.js" ] && [ -f "$cos/mod.json" ] && [ "$(cat "$cos/.revision" 2>/dev/null)" = "$cos_sha" ]; then
+    echo "same: mods/copy-on-select"
   else
-    tmp="$(mktemp -d)"
+    mkdir -p "$stage/mods/copy-on-select"
     for f in main.js mod.json; do
-      curl -fsSL "https://raw.githubusercontent.com/$cos_repo/$cos_sha/mods/copy-on-select/$f" -o "$tmp/$f" ||
-        { rm -rf "$tmp"; die "could not fetch copy-on-select/$f from $cos_repo"; }
+      curl -fsSL "https://raw.githubusercontent.com/$cos_repo/$cos_sha/mods/copy-on-select/$f" -o "$stage/mods/copy-on-select/$f" ||
+        die "could not fetch copy-on-select/$f from $cos_repo"
     done
-    mkdir -p "$live/mods/copy-on-select"
-    cp "$tmp/main.js" "$tmp/mod.json" "$live/mods/copy-on-select/"
-    rm -rf "$tmp"
+    echo "$cos_sha" >"$stage/mods/copy-on-select/.revision"
+    swap mods/copy-on-select
     echo "installed mods/copy-on-select ($cos_repo@${cos_sha:0:7})"
   fi
   if command -v herdr-app >/dev/null 2>&1; then

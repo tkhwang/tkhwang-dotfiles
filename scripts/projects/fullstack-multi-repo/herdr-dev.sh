@@ -393,7 +393,8 @@ clear_servers() {
 
 # Herdr 앱: 토큰 대신 상태 파일. 열린 포트가 없으면 파일을 지운다. 감시가 죽어도 until 이 지나면 mod 가 무시한다.
 # 이모지와 색은 mod 가 TUI 와 같은 규칙으로 붙인다. $1 $2: fe·be 를 띄운 쪽 (user | agent | 빈 문자열)
-statefile="${XDG_STATE_HOME:-$HOME/.local/state}/herdr-dev/$(printf '%s' "${base#/}" | tr '/' '_').json"
+# 경로는 XDG_STATE_HOME 과 무관하게 고정한다: 읽는 쪽 mod (ports.js) 가 ~/.local/state/herdr-dev 만 본다
+statefile="$HOME/.local/state/herdr-dev/$(printf '%s' "${base#/}" | tr '/' '_').json"
 report_file() {
   if [ -z "$1" ] && [ -z "$2" ]; then rm -f "$statefile"; return 0; fi
   mkdir -p "$(dirname "$statefile")"
