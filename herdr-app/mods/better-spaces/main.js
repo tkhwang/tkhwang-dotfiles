@@ -2,7 +2,8 @@
 // (ports.js, from the spaces-dev mod), code marked "dev ports"; updateColors waits for
 // shared colors after a start (marked "space colors"); agent status glows and the
 // navigation commands from filipores/herdr-spaces-status@4881e68 (navigation.js,
-// marked "status glow").
+// marked "status glow"); the active space is tinted yellow, with a yellow bar on the
+// left and its name in bold (marked "current highlight").
 // Better Spaces: a native spaces sidebar with right-aligned branches, nested
 // worktrees, and a PR status line. Repository facts follow each space's first
 // terminal. Agent attention and GitHub PR state remain separate concepts.
@@ -114,6 +115,14 @@ function workPulse(id, t) {
           .opacity(opacity),
       ),
     );
+}
+
+// current highlight: a plain selected background looked like the status outlines, and most
+// space colors are green or teal like the done glow, so the active row is yellow (clear of
+// the blocked orange): a tint and a bar on the left.
+const CURRENT = "#facc15";
+function currentBar() {
+  return div().absolute().left(0).top(6).bottom(6).w(3).rounded(2).bg(CURRENT);
 }
 
 export default class Spaces extends View {
@@ -768,7 +777,7 @@ export default class Spaces extends View {
       .flex_none()
       .justify_center()
       .rounded(8)
-      .when(on, (el) => el.bg(t.selected))
+      .when(on, (el) => el.bg(`${CURRENT}33`).child(currentBar())) // current highlight
       .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
       .when(this.pressed === i && this.over !== i, (el) => el.opacity(0.5))
       .when(this.pressed !== null && this.over === i && this.pressed !== i, (el) =>
@@ -837,6 +846,7 @@ export default class Spaces extends View {
               .truncate()
               .tooltip(w.name)
               .text_color(t.foreground)
+              .when(on, (el) => el.font_semibold()) // current highlight
               .child(w.name),
           )
           .child(g ? this.gitTail(g, tree, w.name, t) : div().flex_1()),
@@ -855,7 +865,7 @@ export default class Spaces extends View {
       .flex_none()
       .justify_center()
       .gap(4)
-      .when(w.active, (el) => el.bg(t.raised))
+      .when(w.active, (el) => el.bg(`${CURRENT}33`).child(currentBar())) // current highlight
       .hover((s) => s.bg(t.hover))
       .on_click(() => run("space.select", { id: w.id }))
       .when(Boolean(working), (el) => el.child(workPulse(w.id, t))) // status glow

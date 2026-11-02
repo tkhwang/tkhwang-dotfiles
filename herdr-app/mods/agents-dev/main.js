@@ -92,6 +92,11 @@ function workPulse(id, t) {
 
 const statusGlow = (a, t) => [...(a.status === "working" ? [workPulse(a.address, t)] : []), ...glow(a.status)];
 
+// current highlight: as in the Spaces list, the focused agent's row is yellow, a tint and
+// a bar on the left, so it reads apart from the status outlines and the green space colors.
+const CURRENT = "#facc15";
+const currentBar = () => div().absolute().left(0).top(6).bottom(6).w(3).rounded(2).bg(CURRENT);
+
 export default class Agents extends View {
   init(_props, cx) {
     if (props()?.sortMenu) return;
@@ -301,6 +306,14 @@ export default class Agents extends View {
       if (detail.get(a.address) == null && seen[`${a.space_name}\u0000`] > 1) detail.set(a.address, label(a));
     }
 
+    // A space's avatar color, as the Spaces list stores it (used by space headers).
+    const MARK = { ansi6: "#22a99a", ansi3: "#e3814f", ansi4: "#5b8def", ansi5: "#8b7cf6", ansi2: "#3fae6a", ansi1: "#d9649a" };
+    const spaceColors = shared("space.colors") ?? {};
+    const spaceFill = (id) => {
+      const c = spaceColors[id] ?? "ansi6";
+      return c.startsWith("#") ? c : (MARK[c] ?? t[c]);
+    };
+
     const row = (a, i, subs = []) => {
       const pic = icon(a.program, 16, t.foreground);
       const more = detail.get(a.address);
@@ -316,6 +329,7 @@ export default class Agents extends View {
           .flex_none()
           .items_center()
           .gap(4)
+          .when(a.focused, (el) => el.bg(`${CURRENT}33`).child(currentBar())) // current highlight
           .hover((s) => s.bg(t.hover))
           .on_click(() => run("pane.focus", { pane: a.pane }))
           .children(statusGlow(a, t)) // status glow
@@ -355,7 +369,7 @@ export default class Agents extends View {
         .rounded(8)
         .items_center()
         .gap(9)
-        .when(a.focused, (el) => el.bg(t.selected))
+        .when(a.focused, (el) => el.bg(`${CURRENT}33`).child(currentBar())) // current highlight
         .cursor_pointer()
         .hover((s) => s.bg(t.hover))
         .on_hover((on, cx) => {
@@ -372,7 +386,8 @@ export default class Agents extends View {
             cx.notify();
           })).child(pic)))
         .child(h_flex().flex_1().min_w(0).gap(5).items_center()
-          .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(idle ? t.muted : t.foreground).child(name))
+          .child(div().min_w(0).max_w(full && more ? 120 : 200).truncate().text_color(idle ? t.muted : t.foreground)
+            .when(a.focused, (el) => el.font_semibold()).child(name)) // current highlight
           .when(full && Boolean(more), el => el.child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(`\u00b7 ${more}`))))
         .when(Boolean(machine), el => el.child(div().text_size(10).text_color(t.dim).child(machine)))
         .when(subs.length > 0, el => el.child(fold(a, subs)))
@@ -421,13 +436,7 @@ export default class Agents extends View {
     // space headers: in "Grouped by space" a space reads as a heading, not a dim label.
     // A line above every group but the first, the space's colored letter as the Spaces list
     // draws it, the name in bold, and the git branch of its agents' folders when in a repo.
-    // MARK and the "space.colors" lookup are copied from spaces' main.js (keep them in step).
-    const MARK = { ansi6: "#22a99a", ansi3: "#e3814f", ansi4: "#5b8def", ansi5: "#8b7cf6", ansi2: "#3fae6a", ansi1: "#d9649a" };
-    const spaceColors = shared("space.colors") ?? {};
-    const spaceFill = (id) => {
-      const c = spaceColors[id] ?? "ansi6";
-      return c.startsWith("#") ? c : (MARK[c] ?? t[c]);
-    };
+    // MARK and spaceFill (above the rows) are copied from spaces' main.js (keep them in step).
     const allPanes = panes();
     const spaceHeader = (g, first) => {
       const open = !this.folded.has(g.id);
