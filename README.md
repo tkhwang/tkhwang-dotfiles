@@ -36,6 +36,34 @@ Notable customizations (herdr >= 0.8.2):
 - `theme.custom.active_row_bg` — makes the current repo/branch row visible in the left pane (the old `surface_dim` override stopped working in 0.8.2, which switched active rows to this dedicated key)
 - `theme.custom.teal` — turns the "agent waiting for you" indicator red
 
+## Herdr app
+
+The [Herdr app](https://herdr.dev/core/) (herdr-core desktop window) keeps its layout and mods in `~/.config/herdr-app`. The customized ones live in [`herdr-app/`](herdr-app/) as copies, not symlinks: the app rewrites the layout file as the window is used.
+
+```bash
+./herdr-app/sync.sh backup   # ~/.config/herdr-app -> herdr-app/ (run after changing a mod or the layout)
+./herdr-app/sync.sh apply    # herdr-app/ -> ~/.config/herdr-app (replaced files go to ~/.config/herdr-app.bak-<time>-<pid>/)
+```
+
+Both copy only the mods and files named in `sync.sh` (`mods`, `files`, plus copy-on-select on `apply`); any other mod in `~/.config/herdr-app` is neither backed up nor replaced.
+
+After a first `apply`, restart Herdr (it sees new mod folders at start) and pick the `main-dev` layout with ⌘⇧L.
+
+- `layouts/main-dev.json` — clone of the shipped `main` layout; its spaces block points to `better-spaces`, its agents block to `agents-dev`, its Changes slot to `better-changes`, its tab bar to `tabs-dev`
+- `mods/spaces-dev` — dev server ports under each space (`🧑 fe:3011 · be:5010`, `🤖` for agent-started servers), read from the files `herdr-dev.sh watch` writes (see `scripts/projects/fullstack-multi-repo/`); patch: `ports.js` and lines marked `dev ports`. Replaced in the layout by `better-spaces` and kept as the fallback
+- `mods/better-spaces` — [munza/herdr-mods](https://github.com/munza/herdr-mods/tree/main/better-spaces) at `77d94f7` (branch right-aligned on the space row, worktrees nested, PR status from `gh`), in the spaces block. Patched with the same `dev ports` line (`ports.js` and lines marked `dev ports`), and `updateColors` waits up to 2 s after a start for the shared `space.colors` (marked `space colors`): without that its first tick recolored every space. It runs `git`, `hc` and `gh` (GitHub with your local `gh` login). A space whose first terminal is in a non-repo folder (a workbranch wrapper) shows no branch or PR. Also merged in: the agent status glows of [filipores/herdr-spaces-status](https://github.com/filipores/herdr-spaces-status) at `4881e68` (green done, orange blocked, a breathing neutral contour while an agent works; `navigation.js` and lines marked `status glow`; commands `better-spaces.first_done` and `better-spaces.next_working`, no keys bound), Apache-2.0 ([`LICENSE-herdr-spaces-status`](herdr-app/LICENSE-herdr-spaces-status), [`NOTICE-herdr-spaces-status`](herdr-app/NOTICE-herdr-spaces-status)). Its own `spaces-glow` mod isn't installed: it replaces the same Spaces block and would drop the branch, PR and port lines. The active space row is tinted yellow (`#facc15`), with a yellow bar on the left and its name in bold (marked `current highlight`): the plain selected background looked like the status outlines, and most space colors are green or teal like the done glow
+- `mods/agents-dev` — "Grouped by space" headers with the space's colored letter, bold name, separators and git branch; patch marked `space headers`. Each agent row also gets the Spaces list's status glow (green done, orange blocked, breathing contour while working; marked `status glow`), and the focused agent's row the same yellow highlight (marked `current highlight`)
+- `mods/changes-dev` — in a workbranch wrapper folder (not a repo, repos right under it such as `backend/` and `frontend/`) a repo picker with per-repo change counts; commits go to the picked repo; patch marked `wrapper repos`
+- `mods/better-changes` — [munza/herdr-mods](https://github.com/munza/herdr-mods/tree/main/better-changes) at `77d94f7` (staged/unstaged groups with stage buttons, tree/flat list, inline/side-by-side diff in one reusable tab), in the Changes slot. Patched with the same `wrapper repos` repo picker (it commits staged changes of the picked repo only), and `mod.json` `place` is `none` so it doesn't also dock a second right sidebar. `changes-dev` stays installed: put it back in the layout's `changes` block to switch.
+- `mods/tabs-dev` — clone of the shipped tab bar whose `+` button opens `herdr-open-with-zed` (one row taller, 543px); patch marked `open with zed`
+- `mods/herdr-open-with-zed` — [atleugim/herdr-open-with-zed](https://github.com/atleugim/herdr-open-with-zed) at `a15570e`, unchanged: Herdr's `+` menu (`new-menu` 0.1.11) with an **Open with Zed** row that opens the focused terminal's folder in Zed (`zed`, else `zeditor`, else `open -a Zed`). Apache-2.0 ([`LICENSE-herdr-open-with-zed`](herdr-app/LICENSE-herdr-open-with-zed)); after a Herdr update changes `new-menu`, copy its `main.js` again and re-add the row
+- `settings.json`, `keys.json` — app look and keys
+- copy-on-select ([jspoynor/herdr-copy-on-select](https://github.com/jspoynor/herdr-copy-on-select)) — copies a terminal selection on mouse release; it has no license, so `apply` downloads it at a pinned commit instead of keeping a copy here
+
+The `-dev` mods are `mod.clone`s of Herdr's own mods (version 0.1.11, recorded as `cloned_from` in each `mod.json`), licensed Apache-2.0 ([`LICENSE-herdr`](herdr-app/LICENSE-herdr)). Clones get no Herdr updates: after an update changes a shipped mod, clone it again and re-apply the marked patch.
+
+`better-changes` and `better-spaces` are Apache-2.0 ([`LICENSE-herdr-mods`](herdr-app/LICENSE-herdr-mods), [`NOTICE-herdr-mods`](herdr-app/NOTICE-herdr-mods)). To update one, copy `<name>/mods/<name>/` from that repo and re-apply its marked patch (and for `better-changes` the `place` change).
+
 ## mco
 
 [mco](https://github.com/mco-org/mco) workflow helpers live in [`mco/mco-workflow.zsh`](mco/mco-workflow.zsh), symlinked to `~/.mco-workflow.zsh` and sourced from `~/.zshrc`.
