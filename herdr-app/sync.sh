@@ -10,8 +10,9 @@
 #
 # apply copies each changed mod or file next to the app folder first, then moves the one it
 # replaces to ~/.config/herdr-app.bak-<time>-<pid>/ (outside the app folder, so the app never
-# loads a backup as a mod) and the copy into place. It installs copy-on-select from its own
-# repo at a pinned commit (it has no license, so it isn't copied here), and checks each mod. The app sees
+# loads a backup as a mod) and the copy into place. It installs copy-on-select and the Catppuccin
+# themes from their own repos at pinned commits (they have no license, so they aren't copied
+# here), and checks each mod. The app sees
 # a new mod folder only when it starts, so restart Herdr after a first apply, then pick the
 # layout with ⌘⇧L or `herdr-app do layout.switch '{"name":"main-dev"}'`.
 set -euo pipefail
@@ -28,6 +29,13 @@ files="layouts/main-dev.json settings.json keys.json"
 # Third-party mod installed from its repo instead of kept here.
 cos_repo="jspoynor/herdr-copy-on-select"
 cos_sha="ea2304a28e3bda6812048ee556c592a558320aa2"
+# Catppuccin themes that layouts/main-dev.json names (Mocha dark, Latte light), installed from
+# their repo, each checked against its sha256. Only the themes: that repo's own layout swaps the
+# tab bar, spaces, agents and changes blocks for its own mods.
+cat_repo="MarcozVD/herdr-layout-catppuccin"
+cat_sha="b58f43478fbf874c8be989b3336793f7c98b6d10"
+cat_themes="herdr-catppuccin.json:946e2d08b250cf4cb8bd603a838f441fe848535f9d62ee88c84a5f508ad0bbf1
+herdr-catppuccin-latte.json:d9f8ce130ad4bf8241e898449f9447c6c4f32290863ff5c5ed5b5ab5850f79f4"
 
 die() { echo "$*" >&2; exit 1; }
 
@@ -83,6 +91,21 @@ apply() {
     rsync -a "$here/mods/$m/" "$stage/mods/$m/"
     swap "mods/$m"
     echo "installed mods/$m"
+  done
+  # Themes go in before the layout, so it never names a missing one.
+  local entry name sum
+  for entry in $cat_themes; do
+    name="${entry%%:*}" sum="${entry#*:}"
+    if [ -f "$live/themes/$name" ] && [ "$(shasum -a 256 "$live/themes/$name" | cut -d' ' -f1)" = "$sum" ]; then
+      echo "same: themes/$name"; continue
+    fi
+    mkdir -p "$stage/themes"
+    curl -fsSL "https://raw.githubusercontent.com/$cat_repo/$cat_sha/themes/$name" -o "$stage/themes/$name" ||
+      die "could not fetch themes/$name from $cat_repo"
+    [ "$(shasum -a 256 "$stage/themes/$name" | cut -d' ' -f1)" = "$sum" ] ||
+      die "themes/$name from $cat_repo does not match its pinned sha256"
+    swap "themes/$name"
+    echo "installed themes/$name ($cat_repo@${cat_sha:0:7})"
   done
   for f in $files; do
     if [ -f "$live/$f" ]; then
