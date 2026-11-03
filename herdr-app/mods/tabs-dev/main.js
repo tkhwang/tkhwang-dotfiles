@@ -2,6 +2,21 @@ import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
 import { spaces, panes, run, openOverlay, theme, window, shared, layout, settings } from "herdr";
 
+// tab width: a minimum, so a short name still gives a wide click target.
+// A longer name still widens the tab (the name itself caps at 170).
+const TAB_MIN_W = 180;
+
+// tab kind: a tab with an agent in any of its panes is tinted yellow, the color that
+// stands out most, since agent tabs matter most. Plain shell tabs keep the theme's grey.
+const AGENT = "#facc15";
+// Alpha suffixes for AGENT: [inactive, active].
+const AGENT_BG = ["26", "4d"], AGENT_HOVER = ["40", "5c"], AGENT_BORDER = ["40", "b3"];
+// Other tabs are outlined in the theme's foreground at these alphas, [inactive, active],
+// so the outline shows in light and dark themes alike. The theme's own `border` (9% white
+// in graphite) and `input` (14%) almost vanish against the bar.
+const OUTLINE = ["40", "66"];
+const withAlpha = (color, aa, fallback) => /^#[0-9a-f]{6}$/i.test(color ?? "") ? color + aa : fallback;
+
 function find(node, id) {
   if (node?.id === id) return node;
   for (const child of node?.children ?? []) {
@@ -53,11 +68,17 @@ export default class Tabs extends View {
     const button = (id, label, action) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(6).text_color(t.dim).hover(s => s.bg(t.hover).text_color(t.foreground))
       .on_mouse_down("left", stop).on_click(action).child(label);
     const item = (c, i) => {
-      const program = panes().find(p => p.tab === c.id && p.program?.agent)?.program ?? panes().find(p => p.tab === c.id)?.program;
+      const inTab = panes().filter(p => p.tab === c.id);
+      const agent = inTab.find(p => p.program?.agent);
+      const program = (agent ?? inTab[0])?.program;
       const name = /^tb\d+$/.test(c.name) ? program?.name ?? "Terminal" : c.name;
-      return h_flex().id(`tab-${c.id}`).h(29).px(10).gap(7).rounded(7).items_center().flex_none().text_size(12.8)
-        .border(1).border_color(c.active ? t.border : t.chrome).bg(c.active ? t.raised : t.chrome).text_color(c.active ? t.foreground : t.muted)
-        .hover(s => s.bg(t.hover))
+      const a = c.active ? 1 : 0; // tab kind
+      return h_flex().id(`tab-${c.id}`).h(29).min_w(TAB_MIN_W).px(10).gap(7).rounded(7).items_center().flex_none().text_size(12.8)
+        // Other tabs are always outlined (inactive ones used to match the bar and read as
+        // bare text); the active one is also filled.
+        .border(1).border_color(agent ? AGENT + AGENT_BORDER[a] : withAlpha(t.foreground, OUTLINE[a], t.dim))
+        .bg(agent ? AGENT + AGENT_BG[a] : c.active ? t.raised : t.chrome).text_color(c.active ? t.foreground : t.muted)
+        .hover(s => s.bg(agent ? AGENT + AGENT_HOVER[a] : t.hover))
         .on_mouse_down("left", (e, cx) => { cx.stop_propagation(); this.pressed = i; if (e.click_count === 2) run("tab.rename", { id: c.id }); })
         .on_mouse_up("left", () => {
           const from = this.pressed; this.pressed = null;
@@ -66,7 +87,9 @@ export default class Tabs extends View {
         })
         .on_mouse_down("right", (_e, cx) => { cx.stop_propagation(); openOverlay({ mod: "menu", kind: "popup", width: 200, props: { tab: "tab", target: { id: c.id, space: space.id } } }); })
         .when(Boolean(program?.icon), el => el.child(program.tint ? svg(program.icon).size(14).text_color(t.muted) : image(program.icon).size(14)))
-        .child(div().max_w(170).truncate().child(c.zoomed ? `${name} Z` : name))
+        // flex_grow (not flex_1) keeps the name's own width as its base, so the spare
+        // width goes to the name and the status dot and close button sit at the right edge.
+        .child(div().flex_grow(1).max_w(170).truncate().child(c.zoomed ? `${name} Z` : name))
         .when(c.status === "working", el => el.child(svg("mods/workspace-chrome/spinner.svg").size(12).flex_none().text_color(t.working).spin(900)))
         .when(c.status === "blocked" || c.status === "done", el => el.child(div().size(6).rounded(3).bg(t[c.status])))
         .when(c.active, el => el.child(div().id(`close-${c.id}`).text_color(t.dim).on_mouse_down("left", stop).on_click((_e, cx) => { cx.stop_propagation(); run("tab.close", { id: c.id }); }).child(svg("mods/pane/close.svg").size(12))));
