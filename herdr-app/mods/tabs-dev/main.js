@@ -1,6 +1,30 @@
 import { View, div, svg, image } from "gpui-kit";
 import { h_flex } from "gpui-base";
-import { spaces, panes, run, openOverlay, theme, window, shared, layout, settings } from "herdr";
+import { spaces, panes, run, openOverlay, theme, window, shared, setShared, layout, settings } from "herdr";
+import { MARKDOWN, markdownTab, showMarkdown } from "./markdown.js"; // markdown browser
+
+// markdown browser: the Markdown file the open panel is on: Files' preview (files-dev publishes it
+// as shared "files-dev.shown"), or the Changes selection better-changes keeps per space.
+function markdownTarget(space, active) {
+  if (!space) return null;
+  if (active === "files") {
+    const s = shared("files-dev.shown");
+    return s?.space === space.id && s.file && MARKDOWN.test(s.file) ? { file: s.file, on: s.on ?? null, cwd: s.cwd ?? null } : null;
+  }
+  if (active === "changes") {
+    const s = (shared("better-changes.diff-tabs") ?? {})[space.id]?.selection;
+    return s?.path && s.root && MARKDOWN.test(s.path) ? { file: `${s.root}/${s.path}`, on: s.on ?? null, cwd: s.root } : null;
+  }
+  return null;
+}
+
+// view mode: Desktop shows a tab's panes side by side (agent | shell | file panel); Mobile shows
+// one pane per tab, its agent (else the focused pane) zoomed, so the shell column folds away and
+// the file panel keeps its room. Shared, so it survives restarts; the panes Mobile zoomed are
+// remembered so Desktop unzooms exactly those.
+const VIEW = "tabs-dev.view";
+const VIEW_ZOOMED = "tabs-dev.view-zoomed";
+const viewMode = () => (shared(VIEW) === "mobile" ? "mobile" : "desktop");
 
 // tab width: a minimum, so a short name still gives a wide click target.
 // A longer name still widens the tab (the name itself caps at 170).
@@ -34,6 +58,27 @@ export default class Tabs extends View {
 
   // The side panel is remembered per space: switching shows that space's choice
   // (closed if it never had one), and opening or closing it records it.
+  // view mode: acts when the mode or the shown tab changes, never on a zoom the person did by hand.
+  syncView(space) {
+    const tab = space?.tabs?.find(c => c.active)?.id, mode = viewMode();
+    if (!tab || (mode === this.viewMode && tab === this.viewTab)) return;
+    const inTab = panes().filter(p => p.tab === tab), zoomed = inTab.find(p => p.zoomed);
+    if (!inTab.length) return; // panes not in yet (a fresh start): look again on the next render
+    this.viewMode = mode; this.viewTab = tab;
+    const alive = new Set(panes().map(p => p.pane));
+    const ours = (shared(VIEW_ZOOMED) ?? []).filter(p => alive.has(p));
+    if (mode === "mobile") {
+      if (inTab.length < 2 || zoomed) return;
+      const target = inTab.find(p => p.program?.agent || p.status) ?? inTab.find(p => p.focused) ?? inTab[0];
+      run("pane.zoom", { pane: target.pane });
+      run("pane.focus", { pane: target.pane });
+      setShared(VIEW_ZOOMED, [...ours, target.pane]);
+    } else if (zoomed && ours.includes(zoomed.pane)) {
+      run("pane.zoom", { pane: zoomed.pane });
+      setShared(VIEW_ZOOMED, ours.filter(p => p !== zoomed.pane));
+    }
+  }
+
   syncPanel(space, panel, body, enabled) {
     if (!space || !panel) return;
     const now = panel.hidden ? null : body?.active ?? null;
@@ -102,6 +147,7 @@ export default class Tabs extends View {
     const panel = find(root, "panel"), body = find(root, "panel-body");
     const enabled = [...(shared("workspace.panels") ?? ["files", "changes"]), "graph"]; // git graph
     this.syncPanel(space, panel, body, enabled);
+    this.syncView(space); // view mode
     const panelButton = (id, label, icon) => {
       const on = panel && !panel.hidden && body?.active === id;
       return h_flex().id(`panel-${id}`).h(26).px(8).gap(5).flex_none().items_center().rounded(6)
@@ -112,15 +158,38 @@ export default class Tabs extends View {
           else { run("layout.select", { stack: "panel-body", child: id }); run("layout.show", { id: "panel" }); }
         }).child(svg(icon).size(14)).child(label);
     };
+    // markdown browser: the Markdown button renders the file picked in the open panel (Files'
+    // preview, or the Changes selection) in this space's viewer tab; lit while that tab is shown.
+    const md = markdownTarget(space, body?.active), mdTab = markdownTab(space?.id)?.tab;
+    const mdOn = Boolean(mdTab) && Boolean(space?.tabs?.some(c => c.id === mdTab && c.active));
+    const markdownButton = h_flex().id("panel-markdown").h(26).px(8).gap(5).flex_none().items_center().rounded(6)
+      .text_size(12).bg(mdOn ? t.selected : t.chrome).text_color(mdOn ? t.foreground : md ? t.muted : t.dim)
+      .tooltip(md ? `Render ${md.file.split("/").pop()}` : "Pick a Markdown file in Files or Changes first")
+      .on_mouse_down("left", stop)
+      .when(Boolean(md), el => el.hover(s => s.bg(t.hover)).on_click((_e, cx) => showMarkdown(md, cx)))
+      .child(svg("mods/markdown-browser/markdown.svg").size(14)).child("Markdown");
+    // view mode: a 3-column | 2-column switch left of + (Desktop | Mobile inside), the mode you are in
+    // lit; the other one switches.
+    const mobile = viewMode() === "mobile";
+    const viewChoice = (id, icon, label, on, mode) => div().id(id).size(24).flex_none().flex().items_center().justify_center().rounded(5)
+      .bg(on ? t.selected : t.chrome).text_color(on ? t.foreground : t.dim)
+      .when(!on, el => el.hover(s => s.bg(t.hover).text_color(t.foreground)))
+      .tooltip(label).on_mouse_down("left", stop).on_click(() => { if (!on) setShared(VIEW, mode); })
+      .child(svg(`mods/tabs-dev/${icon}.svg`).size(15));
+    const viewButton = h_flex().id("view-mode").h(26).p(1).gap(1).flex_none().items_center().rounded(6).border_1().border_color(t.border)
+      .child(viewChoice("view-desktop", "columns-3", "3 columns: agent | shell | file panel", !mobile, "desktop"))
+      .child(viewChoice("view-mobile", "columns-2", "2 columns: agent | file panel", mobile, "mobile"));
     return h_flex().size_full().min_w(0).px(10).pl(lightsPadding).gap(3).items_center().bg(t.chrome).border_b(1).border_color(t.border)
       .on_mouse_up("left", () => { this.pressed = null; })
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().children(shown.map(item)))
+      .child(viewButton) // view mode
       // open with zed: the + menu with an "Open with Zed" row (mods/herdr-open-with-zed), one row taller.
       .child(button("tab-new", "+", () => openOverlay({ mod: "herdr-open-with-zed", kind: "popup", width: 250, height: 543 })))
       .when(enabled.includes("files"), el => el.child(panelButton("files", "Files", "mods/files/file.svg")))
       .when(enabled.includes("changes"), el => el.child(panelButton("changes", "Changes", "mods/changes/changes.svg")))
       .child(panelButton("graph", "Git", "mods/git-graph/icons/graph.svg")) // git graph
+      .child(markdownButton) // markdown browser
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/tabs-dev/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/tabs-dev/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
         .child(button("close-window", w.platform === "windows" ? svg("mods/tabs-dev/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));

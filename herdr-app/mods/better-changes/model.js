@@ -153,3 +153,59 @@ export function splitDiffRows(rows) {
   flushReplacement();
   return paired;
 }
+
+// ai message: the prompt AI_COMMAND (main.js) answers with a commit message. The recent
+// commit messages carry the repository's language, prefix style and whether bodies are
+// written; the diff is cut at a size the model answers quickly from, well under Herdr's
+// 30 s limit on a command.
+export const AI_DIFF_LIMIT = 40000;
+const AI_EXAMPLE_LIMIT = 600;
+
+export function aiPrompt({ stat, diff, examples, branch }) {
+  const cut = diff.length > AI_DIFF_LIMIT;
+  // `git log --format=%B%x1e`: one record per commit, subject and body.
+  const recent = examples
+    .split("\x1e")
+    .map((m) => m.trim())
+    .filter(Boolean)
+    .map((m) => (m.length > AI_EXAMPLE_LIMIT ? m.slice(0, AI_EXAMPLE_LIMIT) + "…" : m));
+  return [
+    "Write a git commit message for the staged changes below.",
+    "Rules:",
+    "- Reply with the commit message only: no quotes, no code fence, no explanation.",
+    "- First a subject line of at most 72 characters, imperative mood, no trailing period.",
+    recent.length
+      ? "- Follow the form of these recent commits from this repository exactly: the same kind of prefix (the same type words, untranslated, and a scope in parentheses when they have one), a summary in their language, tone and grammatical form, and a body after one blank line only when they write bodies, in the same shape:\n" +
+        recent.map((m) => m.split("\n").map((l) => `  ${l}`).join("\n")).join("\n  ---\n")
+      : "- Use the Conventional Commits form, type(scope): summary, in English, with a short body after one blank line only when the change needs explaining.",
+    "- Say what the change does and why, not which files changed. Wrap body lines at 72 characters.",
+    branch ? `Branch: ${branch}` : null,
+    "Changed files:",
+    stat.trim() || "(none)",
+    cut ? `Staged diff (first ${AI_DIFF_LIMIT} characters):` : "Staged diff:",
+    diff.slice(0, AI_DIFF_LIMIT),
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
+}
+
+// The model's answer as a commit message: code fences and a "Subject:" label dropped, quotes
+// around the subject removed, runs of blank lines folded to one.
+export function aiMessage(text) {
+  const lines = String(text ?? "")
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((l) => l.trimEnd())
+    .filter((l) => !l.trim().startsWith("```"));
+  while (lines.length && !lines[0].trim()) lines.shift();
+  if (lines.length)
+    lines[0] = lines[0]
+      .trim()
+      .replace(/^(subject|commit message)\s*:\s*/i, "")
+      .replace(/^["'`]+|["'`]+$/g, "")
+      .trim();
+  return lines
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

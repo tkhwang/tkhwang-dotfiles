@@ -1,11 +1,15 @@
 // Changed from munza/herdr-mods@77d94f7: a repo picker for workbranch wrapper folders
-// (code marked "wrapper repos"), and mod.json "place" is "none" (it sits in the Changes slot).
+// (code marked "wrapper repos"), a multi-line commit message box with the buttons under it
+// (marked "commit box"), a button that asks an AI for the commit message (marked "ai message"),
+// the folder kept while the tab bar's Markdown viewer tab is shown (marked "markdown tab", with
+// markdown.js), and mod.json "place" is "none" (it sits in the Changes slot).
 // Sidebar status/commit controls and a reusable diff-tab view share this class.
 // Pure Git-output parsing and diff-row transformations live in model.js.
 import { em, codeFont } from "./typography.js";
-import { changedFiles, fileTree, diffRows, splitDiffRows } from "./model.js";
+import { changedFiles, fileTree, diffRows, splitDiffRows, aiPrompt, aiMessage } from "./model.js";
+import { markdownTab } from "./markdown.js"; // markdown tab
 import { View, div, svg } from "gpui-kit";
-import { v_flex, h_flex, InputState, Input, Scrollbar, v_virtual_list } from "gpui-base";
+import { v_flex, h_flex, TextareaState, Textarea, Scrollbar, v_virtual_list } from "gpui-base";
 import {
   spaces,
   panes,
@@ -38,6 +42,15 @@ const CONTEXT_POLL_MS = 300;
 const STATUS_POLL_MS = 10000;
 const TAB_OPEN_TIMEOUT_MS = 1500;
 
+// ai message: the program that turns the prompt (its last argument) into a commit subject on
+// stdout, run in the repository on the space's machine. Claude Code's print mode with no
+// tools, no saved session and no settings files (hooks and plugins would only slow it down):
+// about 3 s on sonnet, a second less on haiku, which words it a little worse. Any CLI that
+// prints just the message works here. AI_EXAMPLES recent commit messages from the repository
+// go in the prompt as its style (prefix, language, whether a body is written).
+const AI_COMMAND = ["claude", "-p", "--tools", "", "--no-session-persistence", "--setting-sources", "", "--output-format", "text", "--model", "sonnet"];
+const AI_EXAMPLES = 8;
+
 // wrapper repos: a folder that isn't a Git repo itself but holds repos right under it
 // (a workbranch task: backend/ and frontend/ side by side). Prints those folders' names,
 // hidden ones included.
@@ -56,6 +69,12 @@ function locate() {
   if (!candidates.length && panes().some((p) => p.tab === tab && p.mod === "better-changes")) {
     const source = (shared("better-changes.diff-tabs") ?? {})[space?.id]?.source;
     if (source) return { loc: source, diffTab: true };
+  }
+  // markdown tab: the Markdown viewer tab has no terminal either; stay where it was opened from
+  // (diffTab: a wrapper's repo keeps its bar, as for a diff tab).
+  if (!candidates.length) {
+    const md = markdownTab(space?.id);
+    if (md && md.tab === tab && md.cwd) return { loc: { cwd: md.cwd, on: md.on ?? null }, diffTab: true };
   }
   return {
     loc: {
@@ -105,7 +124,9 @@ export default class Changes extends View {
     this.rows = [];
     this.diffToken = 0; // Monotonically increasing ID for async preview requests.
     this.message = "";
-    this.input = InputState.new({ placeholder: "Commit message…" });
+    // commit box: a multi-line box that grows with the message (subject, blank line, body).
+    this.input = TextareaState.new({ placeholder: "Commit message…", rows: 3 });
+    this.input.set_auto_grow(3, 8);
     this.input.on("change", (_e, cx) => {
       this.message = this.input.value();
       cx.notify();
@@ -695,6 +716,65 @@ export default class Changes extends View {
       }
     });
   }
+
+  // ai message: ask AI_COMMAND for a message from the staged diff and the repository's recent
+  // commits, and put it in the message box to edit and commit. Busy meanwhile, like a commit,
+  // so nothing stages or commits under it; a failure (no `claude`, a timeout) shows as a note.
+  suggestMessage(cx) {
+    if (
+      !this.root ||
+      this.loading ||
+      this.busy ||
+      this.contextKey() !== this.context ||
+      !this.stagedCount ||
+      this.conflicts ||
+      this.mode !== "sidebar"
+    )
+      return;
+    const root = this.root;
+    const on = this.on;
+    const context = this.context;
+    this.busy = true;
+    this.operation = "ai";
+    this.note = null;
+    cx.notify();
+    cx.spawn(async (cx) => {
+      try {
+        const [stat, diff, log, branch] = await Promise.all([
+          this.git(["diff", "--cached", "--no-color", "--stat=80"], root, on),
+          this.git(["diff", "--cached", "--no-color", "--no-ext-diff", "--no-textconv"], root, on),
+          this.git(["log", "--no-merges", "-n", String(AI_EXAMPLES), "--format=%B%x1e"], root, on),
+          this.git(["symbolic-ref", "-q", "--short", "HEAD"], root, on),
+        ]);
+        if (diff.code !== 0) throw Error((diff.stderr || "git diff failed").trim());
+        const prompt = aiPrompt({
+          stat: stat.stdout,
+          diff: diff.stdout,
+          examples: log.code === 0 ? log.stdout : "",
+          branch: branch.code === 0 ? branch.stdout.trim() : "",
+        });
+        const [program, ...args] = AI_COMMAND;
+        const result = await exec(program, [...args, prompt], { cwd: root, on });
+        if (result.code !== 0)
+          throw Error(
+            (result.stderr || result.stdout || `${program} exited with ${result.code}`).trim().split("\n").slice(-3).join(" "),
+          );
+        const message = aiMessage(result.stdout);
+        if (!message) throw Error(`${program} printed no message`);
+        if (context === this.contextKey()) {
+          this.message = message;
+          this.input.set_value(message);
+        }
+      } catch (error) {
+        if (context === this.contextKey()) this.note = `AI message failed: ${error.message}`;
+      } finally {
+        this.busy = false;
+        this.operation = null;
+        this.refresh(cx);
+        cx.notify();
+      }
+    });
+  }
   // ── Shared controls and file rows ─────────────────────────────────────────
 
   icon(id, asset, label, action, t, active = false, disabled = false, size = 24) {
@@ -1079,6 +1159,44 @@ export default class Changes extends View {
       .child(div().min_w(0).truncate().child(row.name));
   }
 
+  // ai message: the sparkle beside the message box. Enabled when there is something staged
+  // to describe; a spinner while the model writes.
+  renderAiButton(t) {
+    const writing = this.operation === "ai";
+    const enabled = Boolean(this.root && !this.busy && !this.loading && this.stagedCount && !this.conflicts);
+    return div()
+      .id("changes-ai-message")
+      .tooltip(
+        writing
+          ? "Writing a commit message…"
+          : enabled
+            ? "Write a commit message with AI from the staged changes"
+            : "Stage changes first, then let AI write the message",
+      )
+      .size(28)
+      .flex_none()
+      .flex()
+      .items_center()
+      .justify_center()
+      .rounded(5)
+      .border_1()
+      .border_color(writing ? t.accent : t.border)
+      .bg(writing ? t.selected : t.raised)
+      .text_color(enabled || writing ? t.muted : t.dim)
+      .on_mouse_down("left", (_e, cx) => cx.stop_propagation())
+      .when(enabled, (el) =>
+        el
+          .cursor_pointer()
+          .hover((s) => s.bg(t.hover).text_color(t.foreground))
+          .on_click((_e, cx) => this.suggestMessage(cx)),
+      )
+      .child(
+        writing
+          ? svg("mods/workspace-chrome/spinner.svg").size(14).text_color(t.accent).spin(900)
+          : svg("mods/better-changes/sparkle.svg").size(14),
+      );
+  }
+
   renderCommitFooter(t, repo = null) {
     const enabled = Boolean(
       this.message.trim() &&
@@ -1095,22 +1213,23 @@ export default class Changes extends View {
       .border_t(1)
       .border_color(t.border)
       .child(
+        Textarea.new(this.input) // commit box
+          .id("changes-commit-message")
+          .w_full()
+          .px(8)
+          .py(6)
+          .rounded(5)
+          .border_1()
+          .border_color(t.border)
+          .bg(t.input)
+          .text_size(em(0.9)),
+      )
+      .child(
         h_flex()
           .gap(6)
           .items_center()
-          .child(
-            Input.new(this.input)
-              .id("changes-commit-message")
-              .h(28)
-              .flex_1()
-              .min_w(0)
-              .px(8)
-              .rounded(5)
-              .border_1()
-              .border_color(t.border)
-              .bg(t.input)
-              .text_size(em(0.9)),
-          )
+          .child(this.renderAiButton(t)) // ai message
+          .child(div().flex_1()) // commit box: the buttons under the box, Commit at the right edge
           .child(
             div()
               .id("changes-commit")
@@ -1136,13 +1255,15 @@ export default class Changes extends View {
           .text_size(em(0.8))
           .text_color(t.dim)
           .child(
-            this.total > MAX_FILES
-              ? "First 1,000 files shown"
-              : this.conflicts
-                ? "Resolve conflicts and stage the files before committing"
-                : repo
-                  ? `Commit includes staged changes in ${repo} only` // wrapper repos
-                  : "Commit includes staged changes only",
+            this.operation === "ai"
+              ? "Writing a commit message from the staged changes…" // ai message
+              : this.total > MAX_FILES
+                ? "First 1,000 files shown"
+                : this.conflicts
+                  ? "Resolve conflicts and stage the files before committing"
+                  : repo
+                    ? `Commit includes staged changes in ${repo} only` // wrapper repos
+                    : "Commit includes staged changes only",
           ),
       );
   }
