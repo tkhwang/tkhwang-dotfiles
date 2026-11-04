@@ -38,7 +38,15 @@ Notable customizations (herdr >= 0.8.2):
 
 ## Herdr app
 
-The [Herdr app](https://herdr.dev/core/) layout and mods (`main-dev`, the `-dev` clones, better-changes, better-spaces, git-graph, markdown-browser, their sync script and licenses) moved to [tkhwang-herdr-mods](https://github.com/tkhwang/tkhwang-herdr-mods). `scripts/projects/fullstack-multi-repo/herdr-dev.sh` here still writes the dev-port files that its `spaces-dev` and `better-spaces` read.
+The [Herdr app](https://herdr.dev/core/) setup lives in [tkhwang-herdr-mods](https://github.com/tkhwang/tkhwang-herdr-mods). The split: whatever installs into `~/.config/herdr-app` (mods, `layouts/main-dev.json`, `settings.json`, `keys.json`) belongs there, and everything else stays here, including [`herdr/`](herdr/), which is the herdr TUI config.
+
+The two repos share one file format. `herdr-dev.sh watch` writes `~/.local/state/herdr-dev/<folder path>.json`, and `ports.js` in the `better-spaces` mod (used by `main-dev`) and its fallback `spaces-dev` reads it. A change to that JSON's fields needs both repos changed together.
+
+The dev-tab scripts in [`scripts/projects/fullstack-multi-repo/`](scripts/projects/fullstack-multi-repo/) (`herdr-dev.sh`, `agent-dev.sh`, `dev-ports.sh`, …) run from the monask-fullstack root:
+
+```bash
+./scripts/projects/fullstack-multi-repo/apply.sh [<monask-fullstack>]   # copy changed scripts to the root (default ~/git/job/monask-fullstack), install into task folders
+```
 
 ## mco
 
