@@ -98,6 +98,12 @@ const statusGlow = (a, t) => [...(a.status === "working" ? [workPulse(a.address,
 const CURRENT = "#22d3ee";
 const currentBar = () => div().absolute().left(0).top(6).bottom(6).w(3).rounded(2).bg(CURRENT);
 
+// nested rows: under a space header an agent's row steps in by the header's avatar and
+// gap (16 + 6), as the Spaces list nests a worktree under its repo (pl 22), so the space
+// reads as the heading and its agents as the items under it. Pinned and priority rows,
+// which name their space themselves, stay at the edge; a row's sub-terminals step in too.
+const NEST = 22;
+
 export default class Agents extends View {
   init(_props, cx) {
     if (props()?.sortMenu) return;
@@ -200,14 +206,14 @@ export default class Agents extends View {
     });
   }
 
-  subRow(t, s, shown, compact) {
+  subRow(t, s, shown, compact, nested = false) {
     const k = s.t;
     const st = kidStatus(k, this.listed);
     const pic = icon(k.program, 14, t.foreground);
     const on = k.address === shown;
     return h_flex()
       .id(`sub-${k.address}`)
-      .pl(39)
+      .pl(nested ? 39 + NEST : 39) // nested rows
       .pr(8)
       .rounded(8)
       .h(26)
@@ -263,7 +269,8 @@ export default class Agents extends View {
       const subs = collapsed ? [] : this.tree(all, a.address);
       const r = row(a, i, subs);
       if (this.folded.has(a.address)) return [r];
-      return [r, ...subs.map((s) => this.subRow(t, s, shown, byPriority))];
+      const nested = !byPriority && !this.pins.includes(a.address); // nested rows
+      return [r, ...subs.map((s) => this.subRow(t, s, shown, byPriority, nested))];
     };
 
     // The fold chevron; folded, the count too, colored by the most urgent one.
@@ -364,7 +371,8 @@ export default class Agents extends View {
       return h_flex()
         .id(`ag-${a.address}`)
         .relative() // status glow
-        .px(8)
+        .pl(full ? 8 : 8 + NEST) // nested rows
+        .pr(8)
         .h(30)
         .flex_none()
         .rounded(8)

@@ -22,9 +22,10 @@ live="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 
 # Mods kept here, each with a small patch: clones of Herdr's own mods (Apache-2.0, see
 # LICENSE-herdr), and better-changes and better-spaces from munza/herdr-mods (Apache-2.0, see
-# LICENSE-herdr-mods and NOTICE-herdr-mods), and herdr-open-with-zed from atleugim/herdr-open-with-zed
-# (Apache-2.0, see LICENSE-herdr-open-with-zed).
-mods="spaces-dev agents-dev changes-dev better-changes better-spaces tabs-dev herdr-open-with-zed"
+# LICENSE-herdr-mods and NOTICE-herdr-mods), herdr-open-with-zed from atleugim/herdr-open-with-zed
+# (Apache-2.0, see LICENSE-herdr-open-with-zed), and git-graph from rabeeh-ta/herdr-git-graph, unpatched
+# (MIT, see LICENSE-herdr-git-graph; its icons follow Lucide, ISC, see mods/git-graph/icons/LICENSE-lucide.txt).
+mods="spaces-dev agents-dev changes-dev better-changes better-spaces tabs-dev herdr-open-with-zed git-graph"
 files="layouts/main-dev.json settings.json keys.json"
 # Third-party mod installed from its repo instead of kept here.
 cos_repo="jspoynor/herdr-copy-on-select"
