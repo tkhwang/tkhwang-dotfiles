@@ -1,5 +1,6 @@
 #!/bin/bash
-# herdr 에 dev 탭을 4분할로 만들어 frontend/backend 의 test watch 와 server 를 띄우고 내린다.
+# herdr 에 dev 탭을 만들어 frontend/backend 의 test watch 와 server 를 2x2 로 띄우고, 그 아래 전체 폭의
+# check pane 에서 바뀐 .ts/.tsx 만 eslint·tsc 한다. 내릴 때는 다섯 pane 을 모두 끝낸다.
 #
 #   ┌───────────────────────┬───────────────────────┐
 #   │ fe test               │ be test               │
@@ -7,7 +8,14 @@
 #   ├───────────────────────┼───────────────────────┤
 #   │ fe server             │ be server             │
 #   │ pnpm main --port FE   │ PORT=BE pnpm start    │
-#   └───────────────────────┴───────────────────────┘
+#   ├───────────────────────┴───────────────────────┤
+#   │ check                                         │
+#   │ ./herdr-dev.sh check                          │
+#   └───────────────────────────────────────────────┘
+#
+# check 높이: herdr 는 2x2 가 75%, check 가 25% 다. Herdr 앱은 분할 비율을 받지 않고 늘 반으로 나누므로
+# test 행 50%, server 행 25%, check 25% 가 된다 (check 를 낮게 두려고 행부터 나눈다).
+# test watch(vitest·jest)와 server(vite·nest swc)는 변환만 해서 lint 도 type 검사도 하지 않는다. check 가 그 몫이다.
 #
 # herdr 두 가지에서 쓴다. 실행한 터미널의 환경 변수로 고른다.
 #   herdr (터미널 멀티플렉서)    HERDR_ENV=1      herdr workspace·tab·pane CLI
@@ -31,18 +39,22 @@
 # Herdr 앱에는 사이드바 토큰이 없어서, 감시가 같은 내용을 ~/.local/state/herdr-dev/<폴더 경로>.json 에 쓴다
 # (space id, 포트, 띄운 쪽, 15초 뒤 만료). ~/.config/herdr-app/mods/spaces-dev 가 읽어 space 줄 아래에 보여준다.
 #
-# usage: ./herdr-dev.sh up|down|restart|status|ports|watch-start
-#   up       dev 탭을 만들고 네 pane 에 명령을 실행한다 (이미 있으면 감시만 확인한다)
+# usage: ./herdr-dev.sh up|down|restart|status|ports|check|watch-start
+#   up       dev 탭을 만들고 각 pane 에 명령을 실행한다 (이미 있으면 감시만 확인한다)
 #   down     각 pane 에 ctrl+c 를 보내 끝낸 뒤 탭을 닫는다. 탭 밖에서 띄운 서버가 남아 있지 않으면 감시도 멈춘다
 #   restart  down 뒤 up
 #   status   이 task 의 dev 탭 pane, 열린 포트, 감시 상태, 다른 task 의 dev 탭을 보여준다
 #   ports    이 task 의 포트와 실행될 명령을 보여준다 (herdr 밖에서도 됨)
+#   check    바뀐 .ts/.tsx 만 eslint·tsc 하는 반복문. check pane 이 돌린다 (herdr 밖에서도 됨, ctrl+c 로 끝)
+#            check --once: 한 번 검사해 결과를 다 보여주고 끝난다. error 가 있으면 exit 1
 #   watch-start  감시만 켠다 (이미 돌고 있으면 그대로). agent-dev.sh 가 부른다
 #   watch    (up·watch-start 가 내부적으로 띄움) 포트 감시 루프
 #
 # env 로 바꿀 수 있다:
 #   BE_PORT FE_PORT                          포트 표 대신 쓸 값 (dev-ports.sh 가 읽는다)
 #   FE_TEST_CMD BE_TEST_CMD FE_SERVER_CMD BE_SERVER_CMD   명령 자체
+#   HERDR_DEV_NO_CHECK=1                     check pane 을 만들지 않는다 (2x2 만)
+#   HERDR_DEV_CHECK_SINCE=<ref>              check 대상에 그 커밋 이후 커밋된 파일도 넣는다 (예: HEAD~1, origin/develop)
 # 예) BE_SERVER_CMD="PORT=5010 pnpm start:dev" ./herdr-dev.sh up
 set -euo pipefail
 
@@ -66,6 +78,8 @@ FE_TEST_CMD="${FE_TEST_CMD:-pnpm test:unit:watch}"
 BE_TEST_CMD="${BE_TEST_CMD:-pnpm test:unit:watch}"
 FE_SERVER_CMD="$fe_server_cmd"
 BE_SERVER_CMD="$be_server_cmd"
+check_cmd="./herdr-dev.sh check"
+if [ "${HERDR_DEV_NO_CHECK:-}" = 1 ]; then with_check=0; else with_check=1; fi
 
 cmd_ports() {
   echo "$task  ${port_note:-}"
@@ -75,9 +89,336 @@ cmd_ports() {
   printf '  %-10s %s\n' "be test"   "$BE_TEST_CMD"
   printf '  %-10s %s\n' "fe server" "$FE_SERVER_CMD"
   printf '  %-10s %s\n' "be server" "$BE_SERVER_CMD"
+  if [ "$with_check" = 1 ]; then
+    printf '  %-10s %s   (바뀐 .ts/.tsx 만 eslint·tsc%s)\n' check "$check_cmd" \
+      "${HERDR_DEV_CHECK_SINCE:+, $HERDR_DEV_CHECK_SINCE 이후 커밋 포함}"
+  else
+    printf '  %-10s %s\n' check "(꺼짐: HERDR_DEV_NO_CHECK=1)"
+  fi
 }
 
-if [ "${1:-}" = ports ]; then cmd_ports; exit 0; fi
+# ---- check: 바뀐 .ts/.tsx 만 eslint·tsc ----
+# check pane 이 돌리는 반복문이다. 저장소 전체는 검사하지 않는다: backend eslint 는 메모리가 모자라 멈추고,
+# 원래 있던 error(fe tsc 13·be tsc 191·fe eslint 108 개)에 새 문제가 묻힌다.
+#   대상    저장소마다 git status 에 나오는(staged·unstaged·untracked) .ts/.tsx 중 있는 파일.
+#           monask-fullstack/verify-touched.sh 와 같은 기준이다. HERDR_DEV_CHECK_SINCE 면 그 커밋 이후 것도 넣는다
+#   eslint  그 파일만
+#   tsc     프로젝트 전체를 돌리고 그 파일의 error 만 이어지는 줄과 함께 남긴다. 전체 error 수도 보여준다
+# 2초마다 HEAD, 바뀐 파일 목록, 각 파일의 수정 시각을 보고, 달라진 뒤 한 번 더(2초) 그대로면 다시 검사한다
+# (저장이 몰릴 때 한 번만 돌게). 검사 중 바뀐 것은 끝난 뒤 다시 돈다. frontend 와 backend 는 따로 돌아
+# fe(10초 남짓) 결과가 be(1분 가까이)를 기다리지 않는다. 검사는 nice 로 낮춰 server·test watch 를 덜 방해한다.
+# 파일 목록은 임시 파일과 xargs -0 으로 넘긴다 (verify-touched.sh 처럼 변수 word-split 에 기대지 않는다).
+check_interval=2
+check_repos=(fe be)
+
+check_dir() { if [ "$1" = be ]; then echo "$be"; else echo "$fe"; fi; }
+
+# $1: 저장소 폴더 → 바뀐 .ts/.tsx 중 있는 파일을 저장소 기준 상대 경로로 한 줄씩 낸다.
+# 몇 초마다 부르므로 --no-optional-locks 로 index.lock 을 잡지 않는다 (사람의 commit 등과 부딪히지 않게).
+# untracked 는 normal 로 받고 새 폴더만 따로 펼친다. -uall 과 결과가 같고 backend 에서 160ms → 50ms 다
+changed_files() {
+  local d="$1"
+  {
+    git -C "$d" --no-optional-locks -c core.quotePath=false status --porcelain --untracked-files=normal
+    if [ -n "${HERDR_DEV_CHECK_SINCE:-}" ]; then
+      git -C "$d" --no-optional-locks -c core.quotePath=false diff --name-only "$HERDR_DEV_CHECK_SINCE" -- \
+        | sed 's/^/M  /'
+    fi
+  } 2>/dev/null | while IFS= read -r line; do
+      p="${line:3}"; p="${p##* -> }"; p="${p#\"}"; p="${p%\"}"
+      case "$p" in
+        */) [ "${line:0:2}" != '??' ] || git -C "$d" --no-optional-locks -c core.quotePath=false \
+              ls-files --others --exclude-standard -- "$p" 2>/dev/null ;;
+        *)  printf '%s\n' "$p" ;;
+      esac
+    done | grep -E '\.tsx?$' | sort -u \
+    | while IFS= read -r p; do if [ -f "$d/$p" ]; then printf '%s\n' "$p"; fi; done
+  return 0
+}
+
+# $1: fe|be → 다시 검사할지 정하는 서명. 바뀐 파일 목록은 $cstate/<fe|be>.cur 에 남긴다
+check_sig() {
+  local d o
+  d="$(check_dir "$1")"; o="$cstate/$1"
+  changed_files "$d" > "$o.cur"
+  git -C "$d" rev-parse HEAD 2>/dev/null
+  (cd "$d" && tr '\n' '\0' < "$o.cur" | xargs -0 stat -f '%m %N') 2>/dev/null
+  return 0
+}
+
+# tsc 출력에서 바뀐 파일의 error 만 이어지는 줄과 함께 남긴다. $1: 바뀐 파일 목록, $2: tsc exit. stdin: tsc 출력
+# 첫 줄 "ok <바뀐 파일 error> <전체 error>" (돌지 못했으면 "fail <exit>" 와 마지막 출력 몇 줄), 다음 줄부터 문제 줄.
+# tsc 는 "path(line,col): error TSxxxx: msg" 를 내고, path 는 저장소 기준이다. 위치 없는 "error TSxxxx" (설정 문제)는 늘 남긴다
+tsc_filter() {
+  awk -v list="$1" -v rc="$2" '
+    BEGIN { while ((getline l < list) > 0) want[l] = 1 }
+    NF && !/^\[WARN\]/ { last[++nl] = $0 }
+    substr($0, 1, 1) != " " && match($0, /\([0-9]+,[0-9]+\): error TS[0-9]+: /) {
+      total++
+      f = substr($0, 1, RSTART - 1); loc = substr($0, RSTART, RLENGTH); msg = substr($0, RSTART + RLENGTH)
+      keep = (f in want)
+      if (keep) {
+        n++
+        split(loc, a, /[(,]/)
+        match(loc, /TS[0-9]+/)
+        out[++k] = "E\t" f ":" a[2] "\t" substr(loc, RSTART, RLENGTH) "\t" msg
+      }
+      next
+    }
+    /^error TS[0-9]+: / {
+      total++; n++; keep = 1
+      match($0, /TS[0-9]+/); out[++k] = "E\ttsconfig\t" substr($0, RSTART, RLENGTH) "\t" substr($0, RSTART + RLENGTH + 2)
+      next
+    }
+    /^ / { if (keep) out[++k] = "+\t" $0; next }
+    { keep = 0 }
+    END {
+      if (total == 0 && rc != 0) {
+        print "fail " rc
+        for (i = (nl > 3 ? nl - 2 : 1); i <= nl; i++) print "+\t" last[i]
+        exit
+      }
+      print "ok " n + 0 " " total + 0
+      for (i = 1; i <= k; i++) print out[i]
+    }'
+}
+
+# eslint JSON 을 줄로 바꾼다. $1: JSON, $2: 저장소 폴더. 첫 줄 "ok <error> <warning>", 다음 줄부터 error 먼저
+eslint_lines() {
+  jq -r --arg root "$2/" --arg rootp "$(cd "$2" && pwd -P)/" '
+    def rel: ltrimstr($rootp) | ltrimstr($root);
+    "ok \(map(.errorCount) | add // 0) \(map(.warningCount) | add // 0)",
+    ([ .[] | (.filePath | rel) as $f | .messages[]
+       | {f: $f, l: (.line // 0), s: .severity,
+          r: (.ruleId // (if .fatal then "parse" else "-" end)),
+          m: (.message | gsub("\\s*\\n\\s*|\\t"; " "))} ]
+     | sort_by(-.s, .f, .l)[]
+     | "\(if .s == 2 then "E" else "W" end)\t\(.f):\(.l)\t\(.r)\t\(.m)")' "$1"
+}
+
+# 저장소 하나를 검사한다. 반복문이 자기 process group 으로 띄우고, 끝낼 때 그룹째 죽인다. $1: fe|be
+# $cstate/<fe|be>.list 를 검사해 같은 이름으로 시작하는 파일에 쓴다. 단계마다 mv 로 바꿔 끼워서 화면은
+# 검사 중에도 지난 결과를 보여준다
+#   .phase  지금 단계 (tsc | eslint)
+#   .tsc .eslint  첫 줄 요약, 다음 줄부터 문제 줄. 탭으로 나눈 "E|W  file:line  규칙  메시지",
+#                 또는 "+  앞 줄에 이어지는 줄" (경로에 공백이 있어도 칸이 어긋나지 않게 탭으로 나눈다)
+#   .end    끝난 시각과 걸린 초
+check_job() {
+  local r="$1" d o t0 rc
+  d="$(check_dir "$r")"; o="$cstate/$r"; t0="$(date +%s)"
+  cd "$d" || exit 1
+  echo tsc > "$o.phase"
+  if [ "$r" = fe ]; then   # package.json 의 tsc:main 과 같다
+    NODE_OPTIONS='--max-old-space-size=4096' nice -n 10 pnpm exec tsc --noEmit -p apps/main-web/tsconfig.app.json
+  else                     # verify-touched.sh 와 같다
+    nice -n 10 pnpm exec tsc --noEmit -p tsconfig.build.json
+  fi > "$o.tsc.raw" 2>&1
+  rc=$?
+  tsc_filter "$o.list" "$rc" < "$o.tsc.raw" > "$o.tsc.tmp" && mv -f "$o.tsc.tmp" "$o.tsc"
+  echo eslint > "$o.phase"
+  rm -f "$o.eslint.json"
+  tr '\n' '\0' < "$o.list" \
+    | xargs -0 nice -n 10 pnpm exec eslint --no-warn-ignored -f json -o "$o.eslint.json" > "$o.eslint.raw" 2>&1
+  # 결과 JSON 이 없거나 읽지 못하면 eslint 자체가 실패한 것이다 (설정 오류, 메모리 등)
+  if [ -s "$o.eslint.json" ] && eslint_lines "$o.eslint.json" "$d" > "$o.eslint.tmp" 2>/dev/null; then :; else
+    { echo fail; grep -v '^\[WARN\]' "$o.eslint.raw" | sed '/^[[:space:]]*$/d' | tail -3 | sed $'s/^/+\t/'; } > "$o.eslint.tmp"
+  fi
+  mv -f "$o.eslint.tmp" "$o.eslint"
+  echo "$(date +%H:%M:%S) $(( $(date +%s) - t0 ))" > "$o.end"
+  rm -f "$o.phase"
+}
+
+# 반복문 상태 (check_stop 이 trap 에서 읽으므로 전역): 저장소 순서는 check_repos 와 같다
+check_pids=("" "")     # 검사 중인 job pid (= process group)
+check_t0=(0 0)         # 검사 시작 시각
+run_sig=("" "")        # 검사 중이거나 마지막으로 검사한 서명
+done_sig=(- -)         # 결과가 나온 서명. - 는 아직 한 번도 안 돈 것
+prev_sig=("" "")       # 지난번 확인 때 서명
+cur_sig=("" "")        # 이번 확인 때 서명
+
+# $1: 저장소 순번, $2: 서명
+check_start() {
+  local i="$1" o="$cstate/${check_repos[$1]}"
+  run_sig[$i]="$2"
+  if [ ! -s "$o.cur" ]; then        # 바뀐 파일이 없으면 돌리지 않고 지난 결과를 지운다
+    rm -f "$o.tsc" "$o.eslint" "$o.end"
+    done_sig[$i]="$2"
+    return 0
+  fi
+  cp "$o.cur" "$o.list"
+  check_t0[$i]="$(date +%s)"
+  set -m      # 자기 process group 으로: ctrl+c 를 받은 반복문이 그룹째(pnpm, node 까지) 끝낸다
+  check_job "${check_repos[$i]}" > /dev/null 2>&1 < /dev/null &
+  check_pids[$i]=$!
+  set +m
+}
+
+# 검사 job 을 그룹째 끝내고 임시 폴더를 지운다. trap INT 뒤에 EXIT 로 한 번 더 불려도 한 번만 한다
+check_stop() {
+  local p
+  [ -n "${cstate:-}" ] || return 0
+  for p in "${check_pids[@]}"; do [ -z "$p" ] || kill -TERM -- "-$p" 2>/dev/null; done
+  check_pids=("" "")
+  rm -rf "$cstate"
+  cstate=""
+  [ "$check_once" = 1 ] || printf '\033[?7h\n'
+}
+
+# 저장소 한 줄 요약. $1: 순번, $2: 지금 (초)
+check_summary() {
+  local i="$1" r="${check_repos[$1]}" o n line s a b c at took ph
+  o="$cstate/$r"
+  n="$(wc -l < "$o.cur" 2>/dev/null | tr -d ' ')"
+  line="$c_b$r$c_0"
+  if [ "${n:-0}" = 0 ] && [ -z "${check_pids[$i]}" ]; then
+    echo "$line  ${c_d}바뀐 .ts/.tsx 없음$c_0"
+    return 0
+  fi
+  line="$line  ${n}개 파일"
+  if [ -f "$o.eslint" ]; then
+    read -r s a b < "$o.eslint"
+    if [ "$s" != ok ]; then line="$line  ${c_r}eslint 실행 실패$c_0"
+    else
+      if [ "$a" -gt 0 ]; then c="$c_r"; elif [ "$b" -gt 0 ]; then c="$c_y"; else c="$c_g"; fi
+      line="$line  ${c}eslint $a error / $b warning$c_0"
+    fi
+  else line="$line  ${c_d}eslint -$c_0"; fi
+  if [ -f "$o.tsc" ]; then
+    read -r s a b < "$o.tsc"
+    if [ "$s" != ok ]; then line="$line  ${c_r}tsc 실행 실패 (exit $a)$c_0"
+    else
+      if [ "$a" -gt 0 ]; then c="$c_r"; else c="$c_g"; fi
+      line="$line  ${c}tsc $a error$c_0 ${c_d}(전체 $b)$c_0"
+    fi
+  else line="$line  ${c_d}tsc -$c_0"; fi
+  if [ -f "$o.end" ]; then read -r at took < "$o.end"; line="$line  ${c_d}$at · ${took}초$c_0"; fi
+  if [ -n "${check_pids[$i]}" ]; then
+    ph="$(cat "$o.phase" 2>/dev/null)"
+    line="$line  ${c_c}검사 중 ${ph:+$ph }$(( $2 - check_t0[i] ))초$c_0"
+    [ "${cur_sig[$i]}" = "${run_sig[$i]}" ] || line="$line ${c_d}· 끝나면 다시$c_0"
+  fi
+  echo "$line"
+}
+
+# 문제 줄: eslint error, tsc error(이어지는 줄 포함), eslint warning 순
+check_view() {
+  local o="$cstate/${check_repos[$1]}"
+  [ ! -f "$o.eslint" ] || sed -n '2,$p' "$o.eslint" | grep -v '^W'
+  [ ! -f "$o.tsc" ] || sed -n '2,$p' "$o.tsc"
+  [ ! -f "$o.eslint" ] || sed -n '2,$p' "$o.eslint" | grep '^W'
+  return 0
+}
+
+# $1: view 파일, $2: 보여줄 줄 수, $3: 전체 줄 수. 잘리면 마지막 줄 대신 남은 수를 보여준다
+check_lines() {
+  local show="$2"
+  if [ "$2" -lt "$3" ] && [ "$2" -gt 0 ]; then show=$(( $2 - 1 )); fi
+  [ "$show" -gt 0 ] || return 0
+  head -n "$show" "$1" | awk -F '\t' -v red="$c_r" -v yel="$c_y" -v dim="$c_d" -v off="$c_0" '
+    $1 == "+" { print dim "  " $2 off; next }
+    { print "  " $2 "  " ($1 == "E" ? red : yel) $3 off "  " $4 }'
+  if [ "$show" -lt "$3" ] && [ "$2" -gt 0 ]; then printf '  %s… %d줄 더%s\n' "$c_d" $(( $3 - show )) "$c_0"; fi
+}
+
+# 화면 한 장. 줄 수는 터미널 높이에 맞춘다 (--once 는 다 보여준다)
+check_render() {
+  local now rows=0 size i budget half nf nb take=()
+  now="$(date +%s)"
+  if [ "$check_once" != 1 ] && size="$(stty size < /dev/tty 2>/dev/null)"; then rows="${size% *}"; fi
+  printf '%scheck%s  %s  %s  %s바뀐 .ts/.tsx 만 eslint·tsc%s%s%s\n' "$c_b" "$c_0" "$task" \
+    "$(date +%H:%M:%S)" "$c_d" "${HERDR_DEV_CHECK_SINCE:+ ($HERDR_DEV_CHECK_SINCE 이후 커밋 포함)}" \
+    "$( [ "$check_once" = 1 ] || echo " · ${check_interval}초마다 확인, ctrl+c 로 끝" )" "$c_0"
+  for i in 0 1; do check_view "$i" > "$cstate/${check_repos[$i]}.view"; done
+  nf="$(wc -l < "$cstate/fe.view" | tr -d ' ')"; nb="$(wc -l < "$cstate/be.view" | tr -d ' ')"
+  # 문제 줄 몫: 머리 세 줄과 맨 아래 빈 줄을 뺀 높이. 한쪽이 덜 쓰면 남는 몫은 다른 쪽이 쓴다
+  take=("$nf" "$nb")
+  if [ "$rows" -gt 0 ] && [ $(( nf + nb )) -gt $(( rows - 4 )) ]; then
+    budget=$(( rows - 4 )); [ "$budget" -ge 0 ] || budget=0
+    half=$(( budget / 2 ))
+    if [ "$nf" -le "$half" ]; then take=("$nf" $(( budget - nf )))
+    elif [ "$nb" -le $(( budget - half )) ]; then take=($(( budget - nb )) "$nb")
+    else take=("$half" $(( budget - half ))); fi
+  fi
+  check_summary 0 "$now"; check_lines "$cstate/fe.view" "${take[0]}" "$nf"
+  check_summary 1 "$now"; check_lines "$cstate/be.view" "${take[1]}" "$nb"
+}
+
+# 화면을 맨 위부터 다시 그린다. 줄마다 끝을 지우고 아래를 지워 깜빡이지 않게 하고, 긴 줄은 줄바꿈 대신 자른다
+check_draw() {
+  printf '\033[?7l\033[H'
+  printf '%s\n' "$1" | sed $'s/$/\033[K/'
+  printf '\033[J\033[?7h'
+}
+
+# --once 로 끝날 때: 문제가 있으면 0
+check_failed() {
+  local f s a b
+  for f in "$cstate"/fe.eslint "$cstate"/fe.tsc "$cstate"/be.eslint "$cstate"/be.tsc; do
+    [ -f "$f" ] || continue
+    read -r s a b < "$f"
+    [ "$s" = ok ] || return 0
+    [ "${a:-0}" -le 0 ] || return 0
+  done
+  return 1
+}
+
+cmd_check() {
+  case "${1:-}" in
+    "") check_once=0 ;;
+    --once) check_once=1 ;;
+    *) die "usage: $0 check [--once]" ;;
+  esac
+  [ -d "$fe" ] || die "frontend 폴더가 없습니다: $fe"
+  [ -d "$be" ] || die "backend 폴더가 없습니다: $be"
+  command -v jq >/dev/null || die "jq 가 없습니다"
+  # 오래 도는 반복문이라 하나가 실패해도 멈추지 않게 한다. 실패는 화면에 보인다
+  set +eu
+  if [ -t 1 ]; then
+    c_r=$'\033[31m' c_y=$'\033[33m' c_g=$'\033[32m' c_c=$'\033[36m' c_d=$'\033[2m' c_b=$'\033[1m' c_0=$'\033[0m'
+  else
+    c_r="" c_y="" c_g="" c_c="" c_d="" c_b="" c_0=""
+  fi
+  cstate="$(mktemp -d "${TMPDIR:-/tmp}/herdr-dev-check.XXXXXX")" || die "임시 폴더를 만들지 못했습니다"
+  trap 'check_stop' EXIT
+  trap 'check_stop; exit 130' INT
+  trap 'check_stop; exit 143' TERM HUP
+  local i sig frame last=""
+  [ "$check_once" = 1 ] || printf '\033[H\033[2J'
+  while :; do
+    for i in 0 1; do
+      sig="$(check_sig "${check_repos[$i]}")"
+      cur_sig[$i]="$sig"
+      if [ -n "${check_pids[$i]}" ]; then
+        if kill -0 "${check_pids[$i]}" 2>/dev/null; then prev_sig[$i]="$sig"; continue; fi
+        wait "${check_pids[$i]}" 2>/dev/null
+        check_pids[$i]=""
+        done_sig[$i]="${run_sig[$i]}"
+      fi
+      # 처음은 바로, 그 뒤로는 서명이 마지막 결과와 다르고 지난번 확인 때와 같을 때 (--once 는 처음 한 번만)
+      if [ "${done_sig[$i]}" = - ] || { [ "$check_once" != 1 ] && [ "$sig" != "${done_sig[$i]}" ] \
+        && [ "$sig" = "${prev_sig[$i]}" ]; }; then
+        check_start "$i" "$sig"
+      fi
+      prev_sig[$i]="$sig"
+    done
+    if [ "$check_once" = 1 ]; then
+      if [ -z "${check_pids[0]}${check_pids[1]}" ]; then
+        check_render
+        if check_failed; then exit 1; else exit 0; fi
+      fi
+      sleep 0.5
+      continue
+    fi
+    frame="$(check_render)"
+    if [ "$frame" != "$last" ]; then check_draw "$frame"; last="$frame"; fi
+    sleep "$check_interval"
+  done
+}
+
+case "${1:-}" in
+  ports) cmd_ports; exit 0 ;;
+  check) cmd_check "${2:-}"; exit $? ;;
+esac
 
 # herdr TUI 를 Herdr 앱 터미널 안에서 띄우면 두 변수가 다 있다. 그때는 herdr pane 안이므로 tui 가 먼저다
 if [ "${HERDR_ENV:-}" = 1 ]; then
@@ -105,7 +446,8 @@ command -v jq >/dev/null || die "jq 가 없습니다"
 #   press <pane> <key>    ctrl+c, ctrl+u 같은 키를 누른다
 #   fg_cmd <pane>         pane 에서 사용자가 친 최상위 명령 (경로는 basename 으로 줄임)
 #   name_pane <pane> <이름>
-#   make_dev_tab          탭과 네 pane 을 만들어 tab p_fe_test p_be_test p_fe_srv p_be_srv 를 채운다
+#   make_dev_tab          탭과 pane 을 만들어 tab p_fe_test p_be_test p_fe_srv p_be_srv p_check 를 채운다
+#                         (HERDR_DEV_NO_CHECK=1 이면 p_check 는 빈 문자열)
 #   close_tab <tab>
 #   status_rows <tab>     pane 마다 "id 이름 명령" 한 줄
 if [ "$mode" = tui ]; then
@@ -154,6 +496,11 @@ if [ "$mode" = tui ]; then
     out="$(herdr tab create --workspace "$ws" --cwd "$fe" --label "$label" --no-focus)"
     tab="$(jq -r '.result.tab.tab_id' <<<"$out")"
     p_fe_test="$(jq -r '.result.root_pane.pane_id' <<<"$out")"
+    # check 가 전체 폭이 되게 root 를 먼저 아래로 나눈다. --ratio 는 위(원래 pane) 몫이다
+    if [ "$with_check" = 1 ]; then
+      p_check="$(herdr pane split "$p_fe_test" --direction down --ratio 0.75 --cwd "$base" --no-focus \
+        | jq -r '.result.pane.pane_id')"
+    fi
     p_be_test="$(herdr pane split "$p_fe_test" --direction right --cwd "$be" --no-focus | jq -r '.result.pane.pane_id')"
     p_fe_srv="$(herdr pane split "$p_fe_test" --direction down --cwd "$fe" --no-focus | jq -r '.result.pane.pane_id')"
     p_be_srv="$(herdr pane split "$p_be_test" --direction down --cwd "$be" --no-focus | jq -r '.result.pane.pane_id')"
@@ -234,7 +581,7 @@ else
   name_pane() { hc label "$1" "herdr-dev.role=$2" >/dev/null; }
 
   make_dev_tab() {
-    local out orig_space orig_tab p_root p_right
+    local out orig_space orig_tab p_root p_right p_mid
     # tab.new 는 새 탭을 바로 보여준다. herdr 의 --no-focus 처럼, 다 만들면 보던 곳으로 돌아간다
     out="$(app_ls)"
     orig_space="$(jq -r '[.spaces[] | select(.active)][0].id // empty' <<<"$out")"
@@ -248,12 +595,24 @@ else
     p_root="$(app_ls | jq -r --arg t "$p_fe_test" \
       '[.spaces[].tabs[].terminals[] | select(.terminal == $t)][0].pane // empty')"
     [ -n "$p_root" ] || die "$p_fe_test 의 pane 을 찾지 못했습니다 (탭 $tab 은 남아 있습니다)"
-    out="$(app_do pane.split --direction right --pane "$p_root")"
-    p_be_test="$(jq -r '.terminal // empty' <<<"$out")"
-    p_right="$(jq -r '.pane // empty' <<<"$out")"
-    [ -n "$p_right" ] || die "pane.split 결과에 pane 이 없습니다: $out"
-    p_fe_srv="$(app_do pane.split --direction down --pane "$p_root" | jq -r '.terminal // empty')"
-    p_be_srv="$(app_do pane.split --direction down --pane "$p_right" | jq -r '.terminal // empty')"
+    if [ "$with_check" = 1 ]; then
+      # pane.split 은 비율을 받지 않고 늘 반으로 나눈다. check 를 낮게 두려고 행부터 만든다:
+      # root 를 아래로 나눈 server 행을 다시 아래로 나눠 check 를 만들고(50% / 25% / 25%), 위 두 행을 좌우로 나눈다
+      out="$(app_do pane.split --direction down --pane "$p_root")"
+      p_fe_srv="$(jq -r '.terminal // empty' <<<"$out")"
+      p_mid="$(jq -r '.pane // empty' <<<"$out")"
+      [ -n "$p_mid" ] || die "pane.split 결과에 pane 이 없습니다: $out"
+      p_check="$(app_do pane.split --direction down --pane "$p_mid" | jq -r '.terminal // empty')"
+      p_be_test="$(app_do pane.split --direction right --pane "$p_root" | jq -r '.terminal // empty')"
+      p_be_srv="$(app_do pane.split --direction right --pane "$p_mid" | jq -r '.terminal // empty')"
+    else
+      out="$(app_do pane.split --direction right --pane "$p_root")"
+      p_be_test="$(jq -r '.terminal // empty' <<<"$out")"
+      p_right="$(jq -r '.pane // empty' <<<"$out")"
+      [ -n "$p_right" ] || die "pane.split 결과에 pane 이 없습니다: $out"
+      p_fe_srv="$(app_do pane.split --direction down --pane "$p_root" | jq -r '.terminal // empty')"
+      p_be_srv="$(app_do pane.split --direction down --pane "$p_right" | jq -r '.terminal // empty')"
+    fi
     if [ -n "$orig_space" ]; then
       herdr-app do space.select --id "$orig_space" >/dev/null 2>&1 || true
       [ -z "$orig_tab" ] || herdr-app do tab.select --id "$orig_tab" >/dev/null 2>&1 || true
@@ -490,12 +849,13 @@ cmd_up() {
     return 1
   fi
   echo "$ws_kind $ws 에 $label 탭을 만듭니다  ${port_note:-}"
-  local p_fe_test p_be_test p_fe_srv p_be_srv
+  local p_fe_test p_be_test p_fe_srv p_be_srv p_check=""
   make_dev_tab
   launch "$p_fe_test" "fe test"   "$FE_TEST_CMD"   "$fe"
   launch "$p_be_test" "be test"   "$BE_TEST_CMD"   "$be"
   launch "$p_fe_srv"  "fe server" "$FE_SERVER_CMD" "$fe"
   launch "$p_be_srv"  "be server" "$BE_SERVER_CMD" "$be"
+  [ -z "$p_check" ] || launch "$p_check" "check" "$check_cmd" "$base"
   echo "완료: $tab   frontend http://localhost:$fe_port → backend http://localhost:$be_port"
   start_watch
 }
