@@ -37,7 +37,9 @@
 # 이 task 의 서버도(기동 중인 agent-dev 서버 포함) 15초 넘게 없으면 감시가 끝난다.
 # ~/.config/herdr/config.toml 의 [ui.sidebar.spaces] rows 에 네 토큰이 있어야 보인다 (색은 거기서 정한다).
 # Herdr 앱에는 사이드바 토큰이 없어서, 감시가 같은 내용을 ~/.local/state/herdr-dev/<폴더 경로>.json 에 쓴다
-# (space id, 포트, 띄운 쪽, 15초 뒤 만료). ~/.config/herdr-app/mods/spaces-dev 가 읽어 space 줄 아래에 보여준다.
+# (space id, 포트, 띄운 쪽, 15초 뒤 만료). Herdr 앱 사이드바 mod 가 같은 ports.js 로 읽어 space 줄 아래에 보여준다:
+# main-dev layout 이 쓰는 ~/.config/herdr-app/mods/better-spaces 와 그 대체용 spaces-dev (둘 다 tkhwang-herdr-mods 저장소).
+# 이 JSON 의 필드를 바꾸면 tkhwang-herdr-mods 의 ports.js 도 같이 고쳐야 한다.
 #
 # usage: ./herdr-dev.sh up|down|restart|status|ports|check|watch-start
 #   up       dev 탭을 만들고 각 pane 에 명령을 실행한다 (이미 있으면 감시만 확인한다)
